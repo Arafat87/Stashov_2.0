@@ -1,0 +1,1283 @@
+{
+  "meta": {
+    "persona": true,
+    "persona_name": "Jordan",
+    "seeded_at": "2026-11-01T20:53:11.695Z",
+    "gate_schema_version": 3
+  },
+  "personal_context": {
+    "owner": "Jordan (demo persona)",
+    "location": "New York, NY",
+    "monthly_discretionary_budget": 800,
+    "spent_this_month": 99,
+    "budget_month": "2026-11",
+    "default_cooling_off_days": 14,
+    "sizes": {
+      "tops": "M",
+      "shoes": "US 10"
+    },
+    "skin_and_health_constraints": [
+      "Oily, acne-prone skin",
+      "Fragrance oils OK, no parabens"
+    ],
+    "fragrance_profile": {
+      "loved": [
+        "oud",
+        "amber"
+      ],
+      "avoided": [
+        "aquatic"
+      ]
+    },
+    "owned_inventory": [
+      {
+        "id": "demo_own_1",
+        "name": "Black Quilted Winter Parka",
+        "category": "Menswear & Streetwear",
+        "brand": "Tokyo Laundry",
+        "notes": "Covers winter to 15F. No duplicate black puffer needed.",
+        "status": "Active in Closet"
+      },
+      {
+        "id": "demo_own_2",
+        "name": "Charcoal Pullover Hoodie",
+        "category": "Menswear & Streetwear",
+        "brand": "BYLT",
+        "notes": "Closet scan: charcoal x2",
+        "status": "Closet scan"
+      },
+      {
+        "id": "demo_own_3",
+        "name": "Shaghaf Oud EDP 75ml",
+        "category": "Fragrances & Cologne",
+        "brand": "Swiss Arabian",
+        "notes": "85% full. Covers sweet oud occasions.",
+        "status": "On Shelf (85% full)"
+      },
+      {
+        "id": "demo_own_4",
+        "name": "Adapalene Gel 0.1%",
+        "category": "Skincare, Health & Protocols",
+        "brand": "Differin",
+        "notes": "PM retinoid — blocks leave-on acids in the PM window.",
+        "status": "Active Routine"
+      },
+      {
+        "id": "demo_own_5",
+        "name": "White Leather Sneakers",
+        "category": "Watches, Footwear & Accessories",
+        "brand": "Koio",
+        "notes": "Closet scan: white",
+        "status": "Closet scan"
+      },
+      {
+        "id": "demo_own_6",
+        "name": "Cast-Iron Skillet 12in",
+        "category": "Food, Halal & Specialty Groceries",
+        "brand": "Lodge",
+        "notes": "Daily driver. No duplicate pans.",
+        "status": "Owned"
+      }
+    ]
+  },
+  "treasury": {
+    "yearly_income": 96000,
+    "currency": "USD",
+    "buckets": [
+      {
+        "id": "demo_bkt_rent",
+        "name": "Rent",
+        "yearly_amount": 28800,
+        "percent": null,
+        "feeds_fun_money": false,
+        "color": "",
+        "created_at": "2026-09-02T20:53:11.695Z",
+        "updated_at": "2026-09-02T20:53:11.695Z"
+      },
+      {
+        "id": "demo_bkt_fun",
+        "name": "Fun Money",
+        "yearly_amount": null,
+        "percent": 10,
+        "feeds_fun_money": true,
+        "color": "",
+        "created_at": "2026-09-02T20:53:11.695Z",
+        "updated_at": "2026-09-02T20:53:11.695Z"
+      },
+      {
+        "id": "demo_bkt_inv",
+        "name": "Investments",
+        "yearly_amount": null,
+        "percent": 15,
+        "feeds_fun_money": false,
+        "color": "",
+        "created_at": "2026-09-02T20:53:11.695Z",
+        "updated_at": "2026-09-02T20:53:11.695Z"
+      },
+      {
+        "id": "demo_bkt_groc",
+        "name": "Groceries",
+        "yearly_amount": 9600,
+        "percent": null,
+        "feeds_fun_money": false,
+        "color": "",
+        "created_at": "2026-09-02T20:53:11.695Z",
+        "updated_at": "2026-09-02T20:53:11.695Z"
+      }
+    ],
+    "updated_at": "2026-09-02T20:53:11.695Z"
+  },
+  "wishlist": [
+    {
+      "id": "demo_w1",
+      "title": "Charcoal Wool Overcoat",
+      "category": "Menswear & Streetwear",
+      "brand": "Suitsupply",
+      "url": "",
+      "domain": "",
+      "retail_price": 429,
+      "lowest_verified_price": 349,
+      "price_currency": "USD",
+      "price_status": "captured",
+      "price_source": "page",
+      "price_confidence": "high",
+      "price_captured_at": "2026-10-19T20:53:11.695Z",
+      "price_checked_at": "2026-10-31T20:53:11.695Z",
+      "target_price": null,
+      "price_history": [
+        {
+          "at": "2026-10-19T20:53:11.695Z",
+          "price": 429,
+          "source": "capture",
+          "confidence": "high"
+        },
+        {
+          "at": "2026-10-31T20:53:11.695Z",
+          "price": 349,
+          "source": "refresh",
+          "confidence": "high"
+        }
+      ],
+      "cooling_off_days": 14,
+      "added_at": "2026-10-19T20:53:11.695Z",
+      "unlock_at": "2026-11-02T20:53:11.695Z",
+      "status": "cooling",
+      "cooling_off_days_left": 14,
+      "cooling_status": "Cooling Off",
+      "snoozed_until": null,
+      "snoozed_at": null,
+      "snooze_count": 0,
+      "snooze_note": "",
+      "purchased_at": null,
+      "purchase_price": null,
+      "purchase_source": "",
+      "purchase_note": "",
+      "skipped_at": null,
+      "skip_reason": "",
+      "inventory_overlap": "Owns Black Quilted Winter Parka — 1-in-1-out rule applies.",
+      "routine_compatibility": "",
+      "best_source": "Suitsupply seasonal sale",
+      "dupe_alternative": "",
+      "verdict_label": "GATE ACTIVE — REVIEW",
+      "uses_per_month": 4,
+      "cost_per_use": 87.25,
+      "image": ""
+    },
+    {
+      "id": "demo_w2",
+      "title": "Swiss Oud EDP 100ml",
+      "category": "Fragrances & Cologne",
+      "brand": "Swiss Arabian",
+      "url": "",
+      "domain": "",
+      "retail_price": 189,
+      "lowest_verified_price": 189,
+      "price_currency": "USD",
+      "price_status": "captured",
+      "price_source": "page",
+      "price_confidence": "high",
+      "price_captured_at": "2026-10-24T20:53:11.695Z",
+      "price_checked_at": "2026-10-24T20:53:11.695Z",
+      "target_price": null,
+      "price_history": [
+        {
+          "at": "2026-10-24T20:53:11.695Z",
+          "price": 189,
+          "source": "capture",
+          "confidence": "high"
+        }
+      ],
+      "cooling_off_days": 14,
+      "added_at": "2026-10-24T20:53:11.695Z",
+      "unlock_at": "2026-11-07T20:53:11.695Z",
+      "status": "cooling",
+      "cooling_off_days_left": 14,
+      "cooling_status": "Cooling Off",
+      "snoozed_until": null,
+      "snoozed_at": null,
+      "snooze_count": 0,
+      "snooze_note": "",
+      "purchased_at": null,
+      "purchase_price": null,
+      "purchase_source": "",
+      "purchase_note": "",
+      "skipped_at": null,
+      "skip_reason": "",
+      "inventory_overlap": "Owns Shaghaf Oud (85% full) — same woody-amber lane.",
+      "routine_compatibility": "",
+      "best_source": "",
+      "dupe_alternative": "Olfactory Factory dupe, ~$45",
+      "verdict_label": "GATE ACTIVE — REVIEW",
+      "uses_per_month": 4,
+      "cost_per_use": 47.25,
+      "image": ""
+    },
+    {
+      "id": "demo_w3",
+      "title": "Ceramic Pour-Over Coffee Set",
+      "category": "Food, Halal & Specialty Groceries",
+      "brand": "Hario",
+      "url": "",
+      "domain": "",
+      "retail_price": 85,
+      "lowest_verified_price": 85,
+      "price_currency": "USD",
+      "price_status": "captured",
+      "price_source": "page",
+      "price_confidence": "high",
+      "price_captured_at": "2026-10-30T20:53:11.695Z",
+      "price_checked_at": "2026-10-30T20:53:11.695Z",
+      "target_price": null,
+      "price_history": [
+        {
+          "at": "2026-10-30T20:53:11.695Z",
+          "price": 85,
+          "source": "capture",
+          "confidence": "high"
+        }
+      ],
+      "cooling_off_days": 14,
+      "added_at": "2026-10-30T20:53:11.695Z",
+      "unlock_at": "2026-11-13T20:53:11.695Z",
+      "status": "cooling",
+      "cooling_off_days_left": 14,
+      "cooling_status": "Cooling Off",
+      "snoozed_until": null,
+      "snoozed_at": null,
+      "snooze_count": 0,
+      "snooze_note": "",
+      "purchased_at": null,
+      "purchase_price": null,
+      "purchase_source": "",
+      "purchase_note": "",
+      "skipped_at": null,
+      "skip_reason": "",
+      "inventory_overlap": "",
+      "routine_compatibility": "",
+      "best_source": "",
+      "dupe_alternative": "",
+      "verdict_label": "GATE ACTIVE — REVIEW",
+      "uses_per_month": 4,
+      "cost_per_use": 21.25,
+      "image": ""
+    },
+    {
+      "id": "demo_w4",
+      "title": "Quince Cashmere Hoodie",
+      "category": "Menswear & Streetwear",
+      "brand": "Quince",
+      "url": "",
+      "domain": "",
+      "retail_price": 150,
+      "lowest_verified_price": 119,
+      "price_currency": "USD",
+      "price_status": "captured",
+      "price_source": "page",
+      "price_confidence": "high",
+      "price_captured_at": "2026-10-12T20:53:11.695Z",
+      "price_checked_at": "2026-10-31T20:53:11.695Z",
+      "target_price": 130,
+      "price_history": [
+        {
+          "at": "2026-10-12T20:53:11.695Z",
+          "price": 150,
+          "source": "capture",
+          "confidence": "high"
+        },
+        {
+          "at": "2026-10-23T20:53:11.695Z",
+          "price": 135,
+          "source": "refresh",
+          "confidence": "high"
+        },
+        {
+          "at": "2026-10-31T20:53:11.695Z",
+          "price": 119,
+          "source": "refresh",
+          "confidence": "high"
+        }
+      ],
+      "cooling_off_days": 14,
+      "added_at": "2026-10-12T20:53:11.695Z",
+      "unlock_at": "2026-10-26T20:53:11.695Z",
+      "status": "ready",
+      "cooling_off_days_left": 14,
+      "cooling_status": "Cooling Off",
+      "snoozed_until": null,
+      "snoozed_at": null,
+      "snooze_count": 0,
+      "snooze_note": "",
+      "purchased_at": null,
+      "purchase_price": null,
+      "purchase_source": "",
+      "purchase_note": "",
+      "skipped_at": null,
+      "skip_reason": "",
+      "inventory_overlap": "",
+      "routine_compatibility": "",
+      "best_source": "",
+      "dupe_alternative": "",
+      "verdict_label": "TARGET HIT — REVIEW",
+      "uses_per_month": 4,
+      "cost_per_use": 29.75,
+      "image": ""
+    },
+    {
+      "id": "demo_w5",
+      "title": "Thursday Captain Boots (Factory Seconds)",
+      "category": "Watches, Footwear & Accessories",
+      "brand": "Thursday",
+      "url": "",
+      "domain": "",
+      "retail_price": 200,
+      "lowest_verified_price": 149,
+      "price_currency": "USD",
+      "price_status": "captured",
+      "price_source": "page",
+      "price_confidence": "high",
+      "price_captured_at": "2026-10-07T20:53:11.695Z",
+      "price_checked_at": "2026-10-29T20:53:11.695Z",
+      "target_price": null,
+      "price_history": [
+        {
+          "at": "2026-10-07T20:53:11.695Z",
+          "price": 200,
+          "source": "capture",
+          "confidence": "high"
+        },
+        {
+          "at": "2026-10-29T20:53:11.695Z",
+          "price": 149,
+          "source": "refresh",
+          "confidence": "high"
+        }
+      ],
+      "cooling_off_days": 14,
+      "added_at": "2026-10-07T20:53:11.695Z",
+      "unlock_at": "2026-10-21T20:53:11.695Z",
+      "status": "ready",
+      "cooling_off_days_left": 14,
+      "cooling_status": "Cooling Off",
+      "snoozed_until": null,
+      "snoozed_at": null,
+      "snooze_count": 0,
+      "snooze_note": "",
+      "purchased_at": null,
+      "purchase_price": null,
+      "purchase_source": "",
+      "purchase_note": "",
+      "skipped_at": null,
+      "skip_reason": "",
+      "inventory_overlap": "",
+      "routine_compatibility": "",
+      "best_source": "",
+      "dupe_alternative": "",
+      "verdict_label": "GATE ACTIVE — REVIEW",
+      "uses_per_month": 4,
+      "cost_per_use": 37.25,
+      "image": ""
+    },
+    {
+      "id": "demo_w6",
+      "title": "Ultra Light Down Vest",
+      "category": "Menswear & Streetwear",
+      "brand": "Uniqlo",
+      "url": "",
+      "domain": "",
+      "retail_price": 99,
+      "lowest_verified_price": 99,
+      "price_currency": "USD",
+      "price_status": "captured",
+      "price_source": "page",
+      "price_confidence": "high",
+      "price_captured_at": "2026-10-02T20:53:11.695Z",
+      "price_checked_at": "2026-10-30T20:53:11.695Z",
+      "target_price": null,
+      "price_history": [
+        {
+          "at": "2026-10-02T20:53:11.695Z",
+          "price": 99,
+          "source": "capture",
+          "confidence": "high"
+        }
+      ],
+      "cooling_off_days": 14,
+      "added_at": "2026-10-02T20:53:11.695Z",
+      "unlock_at": "2026-10-16T20:53:11.695Z",
+      "status": "bought",
+      "cooling_off_days_left": 14,
+      "cooling_status": "Cooling Off",
+      "snoozed_until": null,
+      "snoozed_at": null,
+      "snooze_count": 0,
+      "snooze_note": "",
+      "purchased_at": "2026-10-30T20:53:11.695Z",
+      "purchase_price": 99,
+      "purchase_source": "Uniqlo",
+      "purchase_note": "Price dropped below $100 target",
+      "skipped_at": null,
+      "skip_reason": "",
+      "inventory_overlap": "",
+      "routine_compatibility": "",
+      "best_source": "",
+      "dupe_alternative": "",
+      "verdict_label": "BOUGHT",
+      "uses_per_month": 4,
+      "cost_per_use": 24.75,
+      "image": ""
+    },
+    {
+      "id": "demo_w7",
+      "title": "Santal Scented Candle Trio",
+      "category": "Fragrances & Cologne",
+      "brand": "Maison Gift",
+      "url": "",
+      "domain": "",
+      "retail_price": 95,
+      "lowest_verified_price": 95,
+      "price_currency": "USD",
+      "price_status": "captured",
+      "price_source": "page",
+      "price_confidence": "high",
+      "price_captured_at": "2026-10-14T20:53:11.695Z",
+      "price_checked_at": "2026-10-29T20:53:11.695Z",
+      "target_price": null,
+      "price_history": [
+        {
+          "at": "2026-10-14T20:53:11.695Z",
+          "price": 95,
+          "source": "capture",
+          "confidence": "high"
+        }
+      ],
+      "cooling_off_days": 14,
+      "added_at": "2026-10-14T20:53:11.695Z",
+      "unlock_at": "2026-10-28T20:53:11.695Z",
+      "status": "skipped",
+      "cooling_off_days_left": 14,
+      "cooling_status": "Cooling Off",
+      "snoozed_until": null,
+      "snoozed_at": null,
+      "snooze_count": 0,
+      "snooze_note": "",
+      "purchased_at": null,
+      "purchase_price": null,
+      "purchase_source": "",
+      "purchase_note": "",
+      "skipped_at": "2026-10-29T20:53:11.695Z",
+      "skip_reason": "Cute but not $95 cute",
+      "inventory_overlap": "",
+      "routine_compatibility": "",
+      "best_source": "",
+      "dupe_alternative": "",
+      "verdict_label": "SKIPPED",
+      "uses_per_month": 4,
+      "cost_per_use": 23.75,
+      "image": ""
+    },
+    {
+      "id": "demo_w8",
+      "title": "Burr Espresso Grinder",
+      "category": "Food, Halal & Specialty Groceries",
+      "brand": "Baratza",
+      "url": "",
+      "domain": "",
+      "retail_price": 229,
+      "lowest_verified_price": 229,
+      "price_currency": "USD",
+      "price_status": "captured",
+      "price_source": "page",
+      "price_confidence": "high",
+      "price_captured_at": "2026-10-16T20:53:11.695Z",
+      "price_checked_at": "2026-10-27T20:53:11.695Z",
+      "target_price": null,
+      "price_history": [
+        {
+          "at": "2026-10-16T20:53:11.695Z",
+          "price": 229,
+          "source": "capture",
+          "confidence": "high"
+        }
+      ],
+      "cooling_off_days": 14,
+      "added_at": "2026-10-16T20:53:11.695Z",
+      "unlock_at": "2026-10-30T20:53:11.695Z",
+      "status": "snoozed",
+      "cooling_off_days_left": 14,
+      "cooling_status": "Cooling Off",
+      "snoozed_until": "2026-11-11T20:53:11.695Z",
+      "snoozed_at": "2026-10-27T20:53:11.695Z",
+      "snooze_count": 1,
+      "snooze_note": "Wait for the holiday sale",
+      "purchased_at": null,
+      "purchase_price": null,
+      "purchase_source": "",
+      "purchase_note": "",
+      "skipped_at": null,
+      "skip_reason": "",
+      "inventory_overlap": "",
+      "routine_compatibility": "",
+      "best_source": "",
+      "dupe_alternative": "",
+      "verdict_label": "GATE ACTIVE — REVIEW",
+      "uses_per_month": 4,
+      "cost_per_use": 57.25,
+      "image": ""
+    }
+  ],
+  "spending_ledger": [
+    {
+      "id": "demo_led_1",
+      "item_id": "demo_w6",
+      "title": "Ultra Light Down Vest",
+      "category": "Menswear & Streetwear",
+      "amount": 99,
+      "currency": "USD",
+      "spent_at": "2026-10-30T20:53:11.695Z",
+      "month": "2026-10",
+      "source": "Uniqlo",
+      "note": "Price dropped below $100 target",
+      "voided": false,
+      "created_at": "2026-10-30T20:53:11.695Z"
+    }
+  ],
+  "decision_journal": [
+    {
+      "id": "demo_dec_1",
+      "at": "2026-10-30T20:53:11.695Z",
+      "decision": "bought",
+      "item_id": "demo_w6",
+      "title": "Ultra Light Down Vest",
+      "category": "Menswear & Streetwear",
+      "amount": 99,
+      "reason": "Price dropped below $100 target"
+    },
+    {
+      "id": "demo_dec_2",
+      "at": "2026-10-29T20:53:11.695Z",
+      "decision": "skipped",
+      "item_id": "demo_w7",
+      "title": "Santal Scented Candle Trio",
+      "category": "Fragrances & Cologne",
+      "amount": 95,
+      "reason": "Cute but not $95 cute"
+    },
+    {
+      "id": "demo_dec_3",
+      "at": "2026-10-27T20:53:11.695Z",
+      "decision": "snoozed",
+      "item_id": "demo_w8",
+      "title": "Burr Espresso Grinder",
+      "category": "Food, Halal & Specialty Groceries",
+      "amount": 229,
+      "reason": "Wait for the holiday sale"
+    }
+  ],
+  "protocols": [
+    {
+      "id": "demo_proto_1",
+      "title": "Clear Skin PM Split",
+      "category": "Skincare, Health & Protocols",
+      "schedule": "Daily — 10:30 PM",
+      "credibility_badge": "Dermatology Backed",
+      "source_platform": "YouTube derm roundup",
+      "snapshot_status": "Archived",
+      "conflict_alert": "ACTIVE GUARDRAIL: Blocks leave-on AHA/BHA in the PM window with 0.1% Adapalene.",
+      "steps": [
+        "Double cleanse to remove sunscreen.",
+        "Pea-sized 0.1% Adapalene on dry skin.",
+        "Ceramide moisturizer."
+      ],
+      "linked_wishlist_ids": []
+    },
+    {
+      "id": "demo_proto_2",
+      "title": "Morning Energy Stack",
+      "category": "Skincare, Health & Protocols",
+      "schedule": "Daily — 7:00 AM",
+      "credibility_badge": "Mixed Evidence",
+      "source_platform": "Podcast notes",
+      "snapshot_status": "Archived",
+      "conflict_alert": "",
+      "steps": [
+        "500ml water + electrolytes.",
+        "20g protein within an hour of waking.",
+        "10-minute walk before screens."
+      ],
+      "linked_wishlist_ids": []
+    }
+  ],
+  "routine_log": {},
+  "telemetry": [],
+  "last_digest": null,
+  "bookmarks": [
+    {
+      "id": "demo_b01",
+      "title": "Demo save 1: cologne notes from fragrancex.com",
+      "url": "https://www.fragrancex.com/demo-save-1",
+      "domain": "fragrancex.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Fragrances & Cologne",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "cologne",
+        "deals"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b02",
+      "title": "Demo save 2: cologne notes from fragrancex.com",
+      "url": "https://www.fragrancex.com/demo-save-2",
+      "domain": "fragrancex.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Fragrances & Cologne",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "cologne",
+        "deals"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b03",
+      "title": "Demo save 3: cologne notes from fragrancex.com",
+      "url": "https://www.fragrancex.com/demo-save-3",
+      "domain": "fragrancex.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Fragrances & Cologne",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "cologne",
+        "deals"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b04",
+      "title": "Demo save 4: cologne notes from fragrancex.com",
+      "url": "https://www.fragrancex.com/demo-save-4",
+      "domain": "fragrancex.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Fragrances & Cologne",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "cologne",
+        "deals"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b05",
+      "title": "Demo save 5: cologne notes from fragrancex.com",
+      "url": "https://www.fragrancex.com/demo-save-5",
+      "domain": "fragrancex.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Fragrances & Cologne",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "cologne",
+        "deals"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b06",
+      "title": "Demo save 6: cologne notes from fragrancex.com",
+      "url": "https://www.fragrancex.com/demo-save-6",
+      "domain": "fragrancex.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Fragrances & Cologne",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "cologne",
+        "deals"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b07",
+      "title": "Demo save 7: wardrobe notes from quince.com",
+      "url": "https://www.quince.com/demo-save-7",
+      "domain": "quince.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Menswear & Streetwear",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "wardrobe",
+        "basics"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b08",
+      "title": "Demo save 8: wardrobe notes from quince.com",
+      "url": "https://www.quince.com/demo-save-8",
+      "domain": "quince.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Menswear & Streetwear",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "wardrobe",
+        "basics"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b09",
+      "title": "Demo save 9: wardrobe notes from quince.com",
+      "url": "https://www.quince.com/demo-save-9",
+      "domain": "quince.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Menswear & Streetwear",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "wardrobe",
+        "basics"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b10",
+      "title": "Demo save 10: wardrobe notes from quince.com",
+      "url": "https://www.quince.com/demo-save-10",
+      "domain": "quince.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Menswear & Streetwear",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "wardrobe",
+        "basics"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b11",
+      "title": "Demo save 11: wardrobe notes from quince.com",
+      "url": "https://www.quince.com/demo-save-11",
+      "domain": "quince.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Menswear & Streetwear",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "wardrobe",
+        "basics"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b12",
+      "title": "Demo save 12: wardrobe notes from quince.com",
+      "url": "https://www.quince.com/demo-save-12",
+      "domain": "quince.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Menswear & Streetwear",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "wardrobe",
+        "basics"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b13",
+      "title": "Demo save 13: routine notes from reddit.com",
+      "url": "https://www.reddit.com/demo-save-13",
+      "domain": "reddit.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Skincare, Health & Protocols",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "routine",
+        "skincare"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b14",
+      "title": "Demo save 14: routine notes from reddit.com",
+      "url": "https://www.reddit.com/demo-save-14",
+      "domain": "reddit.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Skincare, Health & Protocols",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "routine",
+        "skincare"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b15",
+      "title": "Demo save 15: routine notes from reddit.com",
+      "url": "https://www.reddit.com/demo-save-15",
+      "domain": "reddit.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Skincare, Health & Protocols",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "routine",
+        "skincare"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b16",
+      "title": "Demo save 16: routine notes from reddit.com",
+      "url": "https://www.reddit.com/demo-save-16",
+      "domain": "reddit.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Skincare, Health & Protocols",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "routine",
+        "skincare"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b17",
+      "title": "Demo save 17: routine notes from reddit.com",
+      "url": "https://www.reddit.com/demo-save-17",
+      "domain": "reddit.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Skincare, Health & Protocols",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "routine",
+        "skincare"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b18",
+      "title": "Demo save 18: routine notes from reddit.com",
+      "url": "https://www.reddit.com/demo-save-18",
+      "domain": "reddit.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Skincare, Health & Protocols",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "routine",
+        "skincare"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b19",
+      "title": "Demo save 19: boots notes from thursdayboots.com",
+      "url": "https://www.thursdayboots.com/demo-save-19",
+      "domain": "thursdayboots.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Watches, Footwear & Accessories",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "boots",
+        "seconds"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b20",
+      "title": "Demo save 20: boots notes from thursdayboots.com",
+      "url": "https://www.thursdayboots.com/demo-save-20",
+      "domain": "thursdayboots.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Watches, Footwear & Accessories",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "boots",
+        "seconds"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b21",
+      "title": "Demo save 21: boots notes from thursdayboots.com",
+      "url": "https://www.thursdayboots.com/demo-save-21",
+      "domain": "thursdayboots.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Watches, Footwear & Accessories",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "boots",
+        "seconds"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b22",
+      "title": "Demo save 22: boots notes from thursdayboots.com",
+      "url": "https://www.thursdayboots.com/demo-save-22",
+      "domain": "thursdayboots.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Watches, Footwear & Accessories",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "boots",
+        "seconds"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b23",
+      "title": "Demo save 23: boots notes from thursdayboots.com",
+      "url": "https://www.thursdayboots.com/demo-save-23",
+      "domain": "thursdayboots.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Watches, Footwear & Accessories",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "boots",
+        "seconds"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b24",
+      "title": "Demo save 24: boots notes from thursdayboots.com",
+      "url": "https://www.thursdayboots.com/demo-save-24",
+      "domain": "thursdayboots.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Watches, Footwear & Accessories",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "boots",
+        "seconds"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b25",
+      "title": "Demo save 25: coffee notes from homegrounds.com",
+      "url": "https://www.homegrounds.com/demo-save-25",
+      "domain": "homegrounds.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Food, Halal & Specialty Groceries",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "coffee",
+        "gear"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b26",
+      "title": "Demo save 26: coffee notes from homegrounds.com",
+      "url": "https://www.homegrounds.com/demo-save-26",
+      "domain": "homegrounds.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Food, Halal & Specialty Groceries",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "coffee",
+        "gear"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b27",
+      "title": "Demo save 27: coffee notes from homegrounds.com",
+      "url": "https://www.homegrounds.com/demo-save-27",
+      "domain": "homegrounds.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Food, Halal & Specialty Groceries",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "coffee",
+        "gear"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b28",
+      "title": "Demo save 28: coffee notes from homegrounds.com",
+      "url": "https://www.homegrounds.com/demo-save-28",
+      "domain": "homegrounds.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Food, Halal & Specialty Groceries",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "coffee",
+        "gear"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b29",
+      "title": "Demo save 29: coffee notes from homegrounds.com",
+      "url": "https://www.homegrounds.com/demo-save-29",
+      "domain": "homegrounds.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Food, Halal & Specialty Groceries",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "coffee",
+        "gear"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b30",
+      "title": "Demo save 30: coffee notes from homegrounds.com",
+      "url": "https://www.homegrounds.com/demo-save-30",
+      "domain": "homegrounds.com",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Food, Halal & Specialty Groceries",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "coffee",
+        "gear"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b31",
+      "title": "Demo save 31: career notes from levels.fyi",
+      "url": "https://www.levels.fyi/demo-save-31",
+      "domain": "levels.fyi",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Career, Jobs & Interview Prep",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "career",
+        "salary"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b32",
+      "title": "Demo save 32: career notes from levels.fyi",
+      "url": "https://www.levels.fyi/demo-save-32",
+      "domain": "levels.fyi",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Career, Jobs & Interview Prep",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "career",
+        "salary"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b33",
+      "title": "Demo save 33: career notes from levels.fyi",
+      "url": "https://www.levels.fyi/demo-save-33",
+      "domain": "levels.fyi",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Career, Jobs & Interview Prep",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "career",
+        "salary"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b34",
+      "title": "Demo save 34: career notes from levels.fyi",
+      "url": "https://www.levels.fyi/demo-save-34",
+      "domain": "levels.fyi",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Career, Jobs & Interview Prep",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "career",
+        "salary"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b35",
+      "title": "Demo save 35: career notes from levels.fyi",
+      "url": "https://www.levels.fyi/demo-save-35",
+      "domain": "levels.fyi",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Career, Jobs & Interview Prep",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "career",
+        "salary"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    },
+    {
+      "id": "demo_b36",
+      "title": "Demo save 36: career notes from levels.fyi",
+      "url": "https://www.levels.fyi/demo-save-36",
+      "domain": "levels.fyi",
+      "original_folder": "Demo",
+      "browser": "Chrome",
+      "category": "Career, Jobs & Interview Prep",
+      "subcategory": "",
+      "item_type": "link",
+      "tags": [
+        "career",
+        "salary"
+      ],
+      "snapshot_status": "Archived",
+      "rot_status": "alive",
+      "embedding": []
+    }
+  ]
+}

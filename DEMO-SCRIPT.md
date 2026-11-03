@@ -1,19 +1,19 @@
 # Stashov — 3-Minute Demo Script
 
 **Target runtime:** 2:50 (hard stop 3:00)
-**Source of truth:** the real vault in `data/vault.json` (1,346 signals, 13 gated wishes, 1,017 library links, 5 protocols)
+**Source of truth:** the vault on stashov.com, captured 28 Oct 2026 — 1,399 signals, 16 gated wishes (10 cooling, 6 ready), 1,068 library links, 10 shelves, 5 protocols, 12 duplicate groups, $215 of the $300 cap left
 **Format:** 1920×1080, 30 fps, one take with live narration (or record VO separately and lay it over)
 
-All numbers below are what the app currently renders. If the live Blob vault differs, record against `npm start` → `http://localhost:3847` so the screen matches the script, and put `stashov.com` on the end card.
+All numbers below are what stashov.com currently renders. The checked-in `data/vault.json` is behind the live vault (13 wishes, 1,346 signals), so **record the deployed app, not localhost** — otherwise the screen contradicts the script. Re-read the Deck and Gate once before the take; if a count moved, say the new one.
 
 ---
 
 ## Before you hit record
 
-- [ ] Unlock the app and open the **Gate** tab. Confirm the strip reads **$215** remaining and the chips read **Cooling 7 / Ready 6**.
-- [ ] Scroll the Gate until the **SEIKO 5 Sports** card and the **Acqua di Parma** card have both rendered (images loaded, no spinners).
-- [ ] Open **Rules**. Today's Playbook must read **0/5 done**. If a routine is already checked, click it once to uncheck it.
-- [ ] Open **Library**. Confirm **1,017** sites filed, then click **Duplicates** once to warm the scan, note **11 groups**, and close the dialog. The badge should read **11**.
+- [ ] Unlock the app and open the **Gate** tab. Confirm the strip reads **$215** remaining and the chips read **Cooling 10 / Ready 6**.
+- [ ] Scroll the Gate until the **SEIKO 5 Sports** card and the **Acqua di Parma** card have both rendered (images loaded, no spinners). The Gate sorts newest first, so SEIKO is now 15th of 16 and Acqua is 5th — filter **Cooling 10** before the take, or the scroll to the watch eats ten seconds of screen time.
+- [ ] Open **Rules**. Today's Playbook must read **0/5 done**. On 28 Oct it opens at **2/5** — Clear Skin and Crash-Free are already checked today — so click both rows to clear them before the take. The 1:54 beat only reads correctly from zero.
+- [ ] Open **Library**. Confirm **1,068** sites filed, then click **Duplicates** once to warm the scan, note **12 groups**, and close the dialog. The badge should read **12**.
 - [ ] Browser at 100% zoom, bookmarks bar hidden (`Ctrl+Shift+B`), devtools and extensions closed, notifications silenced.
 - [ ] Cursor parked at the top-left, outside the content.
 - [ ] Do a 10-second mic test and confirm you are recording the tab, not the whole desktop.
@@ -22,10 +22,10 @@ All numbers below are what the app currently renders. If the live Blob vault dif
 
 ## 0:00 – 0:12 · Cold open (Deck)
 
-**On screen:** Deck tab, hero stat row visible — *Signals indexed 1,346*, *Items gated 13*. Do not move the mouse.
+**On screen:** Deck tab, hero stat row visible — *Signals indexed 1,399*, *Items gated 16*. Do not move the mouse.
 
 **VO:**
-> Four years of saving links. 1,346 of them. Last month I almost spent $195 on a cologne I didn't need. So I built the thing that stops me.
+> Four years of saving links. 1,399 of them. Last month I almost spent $195 on a cologne I didn't need. So I built the thing that stops me.
 
 **Beat:** hold one second of silence before cutting.
 
@@ -47,9 +47,9 @@ All numbers below are what the app currently renders. If the live Blob vault dif
 **On screen (0:28):** Gate tab at the top. Budget strip and status chips visible.
 
 **VO:**
-> This is the Gate. Thirteen things I want. Zero bought. Seven are still cooling, and this watch has three days left — so the Buy button is locked. No override.
+> This is the Gate. Sixteen things I want. Zero bought. Ten are still cooling, and this watch has three days left — so the Buy button is locked. No override.
 
-**On screen (0:42):** Scroll to the **SEIKO 5 Sports** card. Rest the cursor on the **Locked 3d** button, then on the cooling rail.
+**On screen (0:42):** Click **Cooling 10**, then scroll to the **SEIKO 5 Sports** card (second from the bottom of the cooling lane). Rest the cursor on the **Locked 3d** button, then on the cooling rail.
 
 **VO:**
 > Six have cleared, like this cologne. It retails at $195; Stashov found a verified floor of $108. It also checks what I already own, whether it clashes with my routine, and the AI's case against buying it.
@@ -81,17 +81,19 @@ All numbers below are what the app currently renders. If the live Blob vault dif
 
 ## 2:03 – 2:46 · Library cleanup
 
-**On screen (2:03):** Click **Library**. Header shows **1,017 sites filed**; shelf tiles are visible.
+**On screen (2:03):** Click **Library**. Header shows **1,068 sites filed**; shelf tiles are visible.
 
 **VO:**
-> Not everything is a purchase. 1,017 links live in ten reference shelves — education, programming, business, utilities — each one checked and described.
+> Not everything is a purchase. 1,068 links live in ten reference shelves — education, programming, business, utilities — each one checked and described.
 
-**On screen (2:15):** Click **Duplicates**. The dialog reads **11 pages saved more than once — 11 extra copies can be archived.** Keep the default "keep" selection on each group and scroll one group (murf.ai) to show both copies.
+**On screen (2:15):** Click **Duplicates**. The dialog reads **12 pages saved more than once — 12 extra copies can be archived.** Keep the default "keep" selection on each group and scroll one group (murf.ai) to show both copies.
 
 **VO:**
-> The cleanup pass: eleven pages were saved twice. Keep one copy of each, archive the extras. Nothing is deleted — archived links stay recoverable, and the library is eleven duplicates lighter.
+> The cleanup pass: twelve pages were saved twice. Keep one copy of each, archive the extras. Nothing is deleted — archived links stay recoverable, and the library is twelve duplicates lighter.
 
-**On screen (2:30):** Click **Archive 11 extra copies**. Wait for the toast. If the grid does not switch automatically, set the status filter to **Archived** and hover one card's restore icon. Then set it back to **All statuses**.
+**On screen (2:30):** Click **Archive 12 extra copies**. Wait for the toast. If the grid does not switch automatically, set the status filter to **Archived** and hover one card's restore icon. Then set it back to **All statuses**.
+
+**Caution:** this is a live write — the Library drops to **1,056** and the Duplicates badge to **0**, so any retake starts from a different room. Restore from the reset table before a second take, or stop at the dialog and skip the click.
 
 **Beat:** stop moving the mouse for the last sentence.
 
@@ -102,7 +104,7 @@ All numbers below are what the app currently renders. If the live Blob vault dif
 **On screen:** Click **Deck**. Hero stats fully visible; cursor off-screen.
 
 **VO:**
-> 1,346 memories. One fourteen-day gate. Routines that actually get done. Stashov runs on Nebius Token Factory and NVIDIA Nemotron. The live demo is at stashov dot com.
+> 1,399 memories. One fourteen-day gate. Routines that actually get done. Stashov runs on Nebius Token Factory and NVIDIA Nemotron. The live demo is at stashov dot com.
 
 **Beat:** two seconds of silence, then stop the recording. Do not fade to black in-camera.
 
@@ -113,10 +115,10 @@ All numbers below are what the app currently renders. If the live Blob vault dif
 | Problem | Reset |
 |---|---|
 | Routine already checked | Click the same row again. The counter returns to 0/5. |
-| Duplicates already archived | Library → status **Archived** → **Select** → select all → **Restore**. Refresh until the badge reads 11. |
+| Duplicates already archived | Library → status **Archived** → **Select** → select all → **Restore**. Refresh until the badge reads 12. |
 | A purchase was recorded | Gate → **Spend ledger** → void the entry, then reopen the wish. |
 | A dialog is stuck loading | Close it, wait for the library grid, reopen **Duplicates**. |
-| Live numbers differ from this script | Record on localhost with the real vault (`npm start`), mention `stashov.com` on the end card. |
+| Live numbers differ from this script | Read the current figures off the Deck and Gate and say those instead; the swing is usually a few bookmarks or one wish. |
 
 ## Do not show
 

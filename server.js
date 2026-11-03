@@ -16,7 +16,8 @@ const { getClusterMetaMap, replaceStore, updateClusterMeta } = require('./lib/cl
 const { SECTIONS: LIBRARY_SECTIONS, librarySectionFor, librarySectionsWithCounts, findLibraryDuplicates, sectionById: librarySectionById } = require('./lib/library');
 const { parseRoutine, matchWishlistIds } = require('./lib/routine');
 const { extractProductQueries, lookupProduct } = require('./lib/product-lookup');
-const { checkRoutine, createProtocol, updateProtocol, deleteProtocol } = require('./lib/protocols');
+const { checkRoutine, createProtocol, updateProtocol, deleteProtocol, normaliseProtocol } = require('./lib/protocols');
+const { createNote, deleteCategory, deleteNote, ensureNotesState, listNotes, stripTag, updateNote, upsertCategory } = require('./lib/notes');
 const { ProfileError, updatePersonalContext } = require('./lib/profile');
 const {
   ensureGateState,
@@ -33,6 +34,13 @@ const {
   reopenItem,
   voidLedgerEntry,
 } = require('./lib/gate');
+const { allocationSummary, updateTreasury } = require('./lib/treasury');
+const { journalDigest } = require('./lib/journal');
+const { mergeScanIntoInventory, parseImageDataUrl, scanClosetImage } = require('./lib/shelf');
+const { findPrePersonaSnapshot, freshVault, loadPersonaVault, readSnapshotVault } = require('./lib/persona');
+const { sanitizeTags } = require('./lib/tags');
+const { extractTikTokLinks, tikTokVideoId } = require('./lib/tiktok');
+const { buildVideoReference, extractRoutineSteps, fetchPageText } = require('./lib/video');
 const { buildPromotedWish, captureBookmarkProduct, captureFromSnapshot, previewFromCapture } = require('./lib/promotion');
 const { buildFallbackReport, buildVaultAuditMessages, extractReport, usageFromResult } = require('./lib/vault-audit');
 const {
@@ -67,6 +75,7 @@ const SESSION_VALUE = ACCESS_TOKEN
   : '';
 const BODY_LIMIT = 1024 * 1024;
 const IMPORT_LIMIT = 40 * 1024 * 1024;
+const SCAN_BODY_LIMIT = 6 * 1024 * 1024;
 const SECURITY_HEADERS_CSP = [
   "default-src 'self'",
   "script-src 'self'",
@@ -85,17 +94,64 @@ const RATE_BUCKETS = new Map();
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 ensureImageDir();
 
+const meta = require('./lib/meta');
+const baseten = require('./lib/baseten');
+
 const NEBIUS_BASE_URL = (process.env.NEBIUS_BASE_URL || 'https://api.tokenfactory.nebius.com/v1').replace(/\/$/, '');
 const NEBIUS_API_KEY = process.env.NEBIUS_API_KEY || '';
 
-const MODELS = {
-  ultra: process.env.MODEL_ULTRA || 'nvidia/Nemotron-3-Ultra-550b-a55b',
-  super: process.env.MODEL_SUPER || 'nvidia/Nemotron-3-Super-120b-a12b',
-  nano: process.env.MODEL_NANO || 'nvidia/Nemotron-3-Nano-30B-A3B',
-  lightning: process.env.MODEL_LIGHTNING || 'nvidia/Nemotron-3.5-Lightning',
-  vision: process.env.MODEL_VISION || 'zai-org/GLM-5.3-Flash',
-  embedding: process.env.MODEL_EMBEDDING || 'Qwen/Qwen3-Embedding-8B',
+const LEGACY_MODELS = {
+  ultra: 'nvidia/Nemotron-3-Ultra-550b-a55b',
+  super: 'nvidia/Nemotron-3-Super-120b-a12b',
+  nano: 'nvidia/Nemotron-3-Nano-30B-A3B',
+  lightning: 'nvidia/Nemotron-3.5-Lightning',
+  vision: 'zai-org/GLM-5.3-Flash',
+  embedding: 'Qwen/Qwen3-Embedding-8B',
 };
+
+function nebiusConfigured() {
+  return Boolean(NEBIUS_API_KEY && NEBIUS_API_KEY !== 'your_nebius_token_factory_api_key_here');
+}
+
+// Meta Model API is the primary provider; the Nebius Token Factory path
+// stays as an automatic fallback when no Meta key is configured.
+const PROVIDER = meta.isMetaConfigured() ? 'meta' : (nebiusConfigured() ? 'nebius' : 'offline');
+
+function providerClause() {
+  if (PROVIDER === 'meta') return 'Meta Muse via the Meta Model API';
+  if (PROVIDER === 'nebius') return 'NVIDIA Nemotron via Nebius Token Factory';
+  return 'the local deterministic fallback';
+}
+
+function reasonTier() {
+  if (PROVIDER === 'meta') return 'Frontier Reasoning (Muse Wonder)';
+  if (PROVIDER === 'nebius') return '1M-Context Deep Reasoning';
+  return 'Local Fallback';
+}
+
+const MODELS = (() => {
+  if (PROVIDER === 'nebius') {
+    return {
+      ultra: process.env.MODEL_ULTRA || LEGACY_MODELS.ultra,
+      super: process.env.MODEL_SUPER || LEGACY_MODELS.super,
+      nano: process.env.MODEL_NANO || LEGACY_MODELS.nano,
+      lightning: process.env.MODEL_LIGHTNING || LEGACY_MODELS.lightning,
+      vision: process.env.MODEL_VISION || LEGACY_MODELS.vision,
+      embedding: process.env.MODEL_EMBEDDING || LEGACY_MODELS.embedding,
+    };
+  }
+  const muse = meta.metaModels();
+  return {
+    ultra: process.env.MODEL_ULTRA || muse.reason,
+    super: process.env.MODEL_SUPER || muse.agent,
+    nano: process.env.MODEL_NANO || muse.fast,
+    lightning: process.env.MODEL_LIGHTNING || muse.agent,
+    vision: process.env.MODEL_VISION || muse.agent,
+    image: process.env.MODEL_IMAGE || muse.image,
+    segment: process.env.MODEL_SAM || muse.segment,
+    embedding: process.env.MODEL_EMBEDDING || LEGACY_MODELS.embedding,
+  };
+})();
 
 function loadVault() {
   const vault = readVault();
@@ -105,6 +161,17 @@ function loadVault() {
 
 async function saveVault(vault) {
   return writeVault(vault);
+}
+
+/* Bookmark ids are bm_<n> but historical deletions leave gaps, so the
+   next id must come from the max suffix in use, not the array length. */
+function nextBookmarkId(vault) {
+  let max = 0;
+  for (const b of vault.bookmarks || []) {
+    const n = parseInt(String((b && b.id) || '').replace(/^bm_/, ''), 10);
+    if (Number.isFinite(n) && n > max) max = n;
+  }
+  return `bm_${String(max + 1).padStart(4, '0')}`;
 }
 
 function comparableUrl(value) {
@@ -200,9 +267,9 @@ function cosineSim(a, b) {
   return dot / ((Math.sqrt(na) * Math.sqrt(nb)) || 1);
 }
 
-async function callTokenFactoryChat(model, messages, maxTokens = 900) {
+async function callNebiusChat(model, messages, maxTokens = 900) {
   const start = Date.now();
-  if (!NEBIUS_API_KEY || NEBIUS_API_KEY === 'your_nebius_token_factory_api_key_here') {
+  if (!nebiusConfigured()) {
     return { live: false, latency_ms: Date.now() - start + 380, content: null };
   }
   try {
@@ -235,6 +302,17 @@ async function callTokenFactoryChat(model, messages, maxTokens = 900) {
   } catch (_) {
     return { live: false, latency_ms: Date.now() - start, content: null };
   }
+}
+
+// Provider dispatcher: Meta Model API first, Nebius fallback, Baseten rescue,
+// else offline. The rescue fires only when the primary fails.
+async function callChat(model, messages, maxTokens = 900) {
+  const primary = PROVIDER === 'meta'
+    ? await meta.callMetaChat(model, messages, maxTokens)
+    : PROVIDER === 'nebius'
+      ? await callNebiusChat(model, messages, maxTokens)
+      : { live: false, latency_ms: 380, content: null };
+  return baseten.rescueWithBaseten(primary, messages, maxTokens);
 }
 
 function httpError(status, message) {
@@ -595,13 +673,18 @@ async function handleRequest(req, res) {
       }
       return sendJson(res, 200, {
         meta: vault.meta,
-        nebius_configured: Boolean(NEBIUS_API_KEY && NEBIUS_API_KEY !== 'your_nebius_token_factory_api_key_here'),
+        provider: PROVIDER,
+        meta_configured: meta.isMetaConfigured(),
+        nebius_configured: nebiusConfigured(),
+        baseten_configured: baseten.isBasetenConfigured(),
         models: MODELS,
         personal_context: vault.personal_context,
         wishlist: vault.wishlist,
         spending_ledger: vault.spending_ledger || [],
         budget,
         gate,
+        treasury: allocationSummary(vault),
+        decision_journal: (vault.decision_journal || []).slice(0, 25),
         protocols: vault.protocols,
         routine_log: vault.routine_log || {},
         telemetry: [...telemetryRows, ...legacyTelemetry].slice(0, 25),
@@ -841,6 +924,88 @@ async function handleRequest(req, res) {
           library_color: section.color,
         },
       });
+    }
+
+    // 3b. PUT /api/bookmarks/:id/tags — replace a bookmark's tags (Refs board editor)
+    const bookmarkTagsMatch = pathname.match(/^\/api\/bookmarks\/([a-z0-9_]+)\/tags$/i);
+    if (req.method === 'PUT' && bookmarkTagsMatch) {
+      const vault = loadVault();
+      const bookmark = (vault.bookmarks || []).find((item) => item.id === bookmarkTagsMatch[1]);
+      if (!bookmark) return sendJson(res, 404, { error: 'Bookmark not found.' });
+      const body = await parseBody(req);
+      const { tags, error } = sanitizeTags(body.tags);
+      if (!tags) return sendJson(res, 400, { error });
+      bookmark.tags = tags;
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, bookmark: { id: bookmark.id, tags: bookmark.tags } });
+    }
+
+    // 3c. Notes API — Refs board notes, categories, and tag surgery
+    if (req.method === 'GET' && pathname === '/api/notes') {
+      const vault = ensureNotesState(loadVault());
+      return sendJson(res, 200, {
+        ok: true,
+        notes: listNotes(vault, {
+          category: parsedUrl.searchParams.get('category') || 'ALL',
+          tag: parsedUrl.searchParams.get('tag') || '',
+          q: parsedUrl.searchParams.get('q') || '',
+        }),
+        categories: vault.note_categories,
+      });
+    }
+    if (req.method === 'POST' && pathname === '/api/notes') {
+      const vault = loadVault();
+      const body = await parseBody(req);
+      const note = createNote(vault, body || {});
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, note });
+    }
+    if (req.method === 'POST' && pathname === '/api/notes/tags/remove') {
+      const vault = loadVault();
+      const body = await parseBody(req);
+      const changed = stripTag(vault, body.tag || '');
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, changed });
+    }
+    const noteMatch = pathname.match(/^\/api\/notes\/([a-z0-9_]+)$/i);
+    if (req.method === 'PUT' && noteMatch) {
+      const vault = loadVault();
+      const body = await parseBody(req);
+      const note = updateNote(vault, noteMatch[1], body || {});
+      if (!note) return sendJson(res, 404, { error: 'Note not found.' });
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, note });
+    }
+    if (req.method === 'DELETE' && noteMatch) {
+      const vault = loadVault();
+      const removed = deleteNote(vault, noteMatch[1]);
+      if (!removed) return sendJson(res, 404, { error: 'Note not found.' });
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, removed: removed.id });
+    }
+    if (req.method === 'POST' && pathname === '/api/note-categories') {
+      const vault = loadVault();
+      const body = await parseBody(req);
+      const { category, error } = upsertCategory(vault, body || {});
+      if (!category) return sendJson(res, 400, { error });
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, category, categories: vault.note_categories });
+    }
+    const noteCategoryMatch = pathname.match(/^\/api\/note-categories\/([a-z0-9-]+)$/i);
+    if (req.method === 'PUT' && noteCategoryMatch) {
+      const vault = loadVault();
+      const body = await parseBody(req);
+      const { category, error } = upsertCategory(vault, body || {}, noteCategoryMatch[1]);
+      if (!category) return sendJson(res, 400, { error });
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, category, categories: vault.note_categories });
+    }
+    if (req.method === 'DELETE' && noteCategoryMatch) {
+      const vault = loadVault();
+      const result = deleteCategory(vault, noteCategoryMatch[1]);
+      if (!result) return sendJson(res, 404, { error: 'Category not found.' });
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, removed: result.removed.id, moved: result.moved, categories: vault.note_categories });
     }
 
     // 4. Routine builder — parse a pasted routine into an editable protocol
@@ -1091,6 +1256,32 @@ async function handleRequest(req, res) {
       }
     }
 
+    // 3a. GET /api/treasury — yearly income allocation summary (Treasury wing)
+    if (req.method === 'GET' && pathname === '/api/treasury') {
+      const vault = loadVault();
+      return sendJson(res, 200, { ok: true, treasury: allocationSummary(vault) });
+    }
+
+    // 3b. PUT /api/treasury — set income, upsert/delete buckets, sync the fun cap
+    if (req.method === 'PUT' && pathname === '/api/treasury') {
+      const body = await parseBody(req);
+      const vault = loadVault();
+      try {
+        const result = updateTreasury(vault, body || {});
+        const tel = recordTelemetry(
+          vault,
+          `Treasury updated: $${result.treasury.allocated.toFixed(2)} allocated across ${result.treasury.bucket_count} buckets`,
+          'Manual treasury edit',
+          'Treasury',
+          0, 0, 0, 0
+        );
+        await saveVault(vault);
+        return sendJson(res, 200, { ok: true, ...result, telemetry: tel });
+      } catch (err) {
+        return sendJson(res, err.status || 400, { error: err.message });
+      }
+    }
+
     // 4. GET /api/bookmarks - paginated & filtered bookmarks + hybrid semantic search
     if (req.method === 'GET' && pathname === '/api/bookmarks') {
       const vault = loadVault();
@@ -1222,8 +1413,25 @@ async function handleRequest(req, res) {
         return sendJson(res, 400, { error: 'Please provide a URL, text note, or screenshot description.' });
       }
 
+      let videoRef = null;
+      let classifyName = titleInput || rawInput;
+      if (mode === 'video') {
+        if (!/^https?:\/\//i.test(rawInput)) {
+          return sendJson(res, 400, { error: 'Video mode needs a video URL (YouTube or TikTok link).' });
+        }
+        videoRef = await buildVideoReference(rawInput);
+        if (!videoRef) {
+          return sendJson(res, 400, { error: 'That does not look like a video URL.' });
+        }
+        classifyName = [
+          titleInput || videoRef.title,
+          videoRef.products.map((p) => p.name).join(' '),
+          (videoRef.transcript || '').slice(0, 400),
+        ].filter(Boolean).join(' — ') || rawInput;
+      }
+
       const [category, itemType, subcategory] = classifyBookmark({
-        name: titleInput || rawInput,
+        name: classifyName,
         url: rawInput,
         folder: mode === 'screenshot' ? 'shopping' : '',
       });
@@ -1254,7 +1462,7 @@ async function handleRequest(req, res) {
         try { ingestUrl = new URL(rawInput).href; } catch (_) { ingestUrl = ''; }
       }
       const newBookmark = {
-        id: `bm_${String((vault.bookmarks || []).length + 1).padStart(4, '0')}`,
+        id: nextBookmarkId(vault),
         title: titleInput || rawInput.slice(0, 100),
         url: ingestUrl || `https://stashov.local/capture/${Date.now()}`,
         domain: ingestUrl ? new URL(ingestUrl).hostname.replace(/^www\./, '') : 'local-capture',
@@ -1273,10 +1481,27 @@ async function handleRequest(req, res) {
         try { resolvedImage = await resolveImage(newBookmark.url); } catch (_) {}
       }
       newBookmark.image = resolvedImage;
+      if (videoRef) {
+        newBookmark.title = (titleInput || videoRef.title || newBookmark.title).slice(0, 140);
+        newBookmark.tags = [subcategory.toLowerCase().split(' ')[0], 'video', videoRef.platform, 'reference'];
+        if (videoRef.thumbnail) newBookmark.image = videoRef.thumbnail;
+        const productLine = videoRef.products.length
+          ? `Spotted in video: ${videoRef.products.map((p) => p.name).join('; ')}`
+          : '';
+        newBookmark.description = (productLine || (videoRef.transcript || '').slice(0, 320)).slice(0, 360);
+        newBookmark.use_for = 'Video reference';
+        newBookmark.video = {
+          platform: videoRef.platform,
+          video_id: videoRef.video_id,
+          author: videoRef.author,
+          products: videoRef.products,
+          warnings: videoRef.warnings,
+        };
+      }
       vault.bookmarks.unshift(newBookmark);
 
       let createdWishlist = null;
-      if (mode === 'screenshot' || itemType === 'wishlist' || priceInput > 0) {
+      if (mode !== 'video' && (mode === 'screenshot' || itemType === 'wishlist' || priceInput > 0)) {
         const retail = priceInput > 0 ? priceInput : 75;
         const floor = Number((retail * 0.68).toFixed(2));
         createdWishlist = {
@@ -1304,6 +1529,105 @@ async function handleRequest(req, res) {
         vault.wishlist.unshift(createdWishlist);
       }
 
+      /* Every scan also files a Note on the Refs board. A video goes
+         further: spotted products are priced online into the Gate, and
+         routine instructions in the transcript become a Rules protocol.
+         None of this may block the capture itself. */
+      let createdNote = null;
+      const productsFiled = [];
+      let routineCreated = null;
+      try {
+        if (mode === 'video' && videoRef) {
+          for (const product of videoRef.products.slice(0, 5)) {
+            let found = null;
+            try { found = await lookupProduct(product.name, { deadlineMs: 10000 }); } catch (_) { found = null; }
+            const priced = found && Number(found.price) > 0;
+            const retail = priced ? Number(found.price) : 75;
+            const wish = {
+              id: `wl_${Date.now()}_${productsFiled.length}`,
+              title: found ? found.title : product.name,
+              brand: (found && found.brand) || product.brand || '',
+              url: (found && found.url) || rawInput,
+              image: (found && found.image) || videoRef.thumbnail || '',
+              category,
+              retail_price: retail,
+              lowest_verified_price: priced ? Number(found.price) : Number((retail * 0.68).toFixed(2)),
+              best_source: found ? (found.domain || 'Online lookup') : 'Price not found online — estimate',
+              dupe_alternative: 'See category spec equivalent in Vault ($25–$45)',
+              uses_per_month: 10,
+              cost_per_use: Number((retail / 120).toFixed(2)),
+              inventory_overlap: overlapWarning,
+              routine_compatibility: 'Verified Compatible',
+              verdict,
+              verdict_label: verdictLabel,
+              anti_hype_summary: `Spotted in a ${videoRef.platform} video${found ? ` and priced via ${found.domain || 'online lookup'}` : ''}. Impulse Cooling-Off lock active for 14 days.`,
+              snapshot_excerpt: `From video: ${rawInput}`,
+              tags: ['video', videoRef.platform, 'reference'],
+            };
+            startGate(wish, { days: vault.personal_context.default_cooling_off_days || 14 });
+            vault.wishlist.unshift(wish);
+            productsFiled.push({ name: product.name, price: priced ? Number(found.price) : null, wishlist_id: wish.id, found: Boolean(found) });
+          }
+          const routine = extractRoutineSteps(videoRef.transcript || '');
+          if (routine.steps.length >= 2) {
+            try {
+              const protocol = normaliseProtocol({
+                title: `${(videoRef.title || 'Video routine').slice(0, 80)} — routine`,
+                category,
+                schedule: routine.schedule,
+                source_platform: videoRef.platform,
+                snapshot_status: 'Captured from video transcript',
+                steps: routine.steps,
+                linked_wishlist_ids: productsFiled.map((p) => p.wishlist_id),
+                source_text: (videoRef.transcript || '').slice(0, 6000),
+              }, {}, vault.wishlist || []);
+              vault.protocols = Array.isArray(vault.protocols) ? vault.protocols : [];
+              vault.protocols.unshift(protocol);
+              routineCreated = { id: protocol.id, title: protocol.title, steps: protocol.steps.length };
+            } catch (_) { routineCreated = null; }
+          }
+          createdNote = createNote(vault, {
+            title: videoRef.title || newBookmark.title,
+            body: [
+              productsFiled.length ? `Products filed to the Gate: ${productsFiled.map((p) => `${p.name}${p.price ? ` ($${p.price})` : ''}`).join('; ')}.` : '',
+              routineCreated ? `Routine saved to Rules: ${routineCreated.title} (${routineCreated.steps} steps).` : '',
+              (videoRef.transcript || '').slice(0, 1500),
+            ].filter(Boolean).join('\n\n'),
+            category: videoRef.products.length ? 'products' : 'reference',
+            tags: ['video', videoRef.platform, 'reference'],
+            source_url: rawInput,
+            source_type: 'video',
+          });
+        } else if (mode === 'note') {
+          createdNote = createNote(vault, {
+            title: titleInput || 'Note',
+            body: rawInput,
+            category: 'reference',
+            tags: ['note'],
+            source_type: 'note',
+          });
+        } else if (mode === 'url') {
+          let page = null;
+          try { page = await fetchPageText(rawInput); } catch (_) { page = null; }
+          createdNote = createNote(vault, {
+            title: titleInput || (page && page.title) || newBookmark.title,
+            body: page ? page.text.slice(0, 1800) : '',
+            category: 'reference',
+            tags: ['web'],
+            source_url: ingestUrl,
+            source_type: 'url',
+          });
+        } else if (mode === 'screenshot') {
+          createdNote = createNote(vault, {
+            title: titleInput || 'Screenshot capture',
+            body: rawInput,
+            category: 'reference',
+            tags: ['screenshot'],
+            source_type: 'screenshot',
+          });
+        }
+      } catch (_) { /* notes and pipelines never block a capture */ }
+
       const tel = recordTelemetry(
         vault,
         `Ingested ${mode.toUpperCase()}: "${(titleInput || rawInput).slice(0, 55)}" -> [${category}]`,
@@ -1320,11 +1644,22 @@ async function handleRequest(req, res) {
         ok: true,
         bookmark: newBookmark,
         wishlist_item: createdWishlist,
+        note: createdNote,
+        products_filed: productsFiled,
+        routine_created: routineCreated,
+        video: videoRef ? {
+          platform: videoRef.platform,
+          title: videoRef.title,
+          products: videoRef.products,
+          vision_live: videoRef.vision_live,
+          transcript_chars: (videoRef.transcript || '').length,
+          warnings: videoRef.warnings,
+        } : null,
         telemetry: tel,
       });
     }
 
-    // 5. POST /api/impulse-gate — Run Nemotron 3 Ultra "Talk Me Out of Buying This" analysis on any item
+    // 5. POST /api/impulse-gate — Run the frontier reasoner (Muse Wonder) "Talk Me Out of Buying This" analysis on any item
     if (req.method === 'POST' && pathname === '/api/impulse-gate') {
       if (!rateLimit(req, 'impulse-gate', 10, 60 * 1000)) {
         return sendJson(res, 429, { error: 'The oracle is rate limited to 10 requests per minute.' }, { 'Retry-After': '60' });
@@ -1342,20 +1677,21 @@ async function handleRequest(req, res) {
       const ctx = vault.personal_context;
       const budget = budgetSummary(vault);
       const remaining = budget.remaining;
+      const pastDecisions = journalDigest(vault);
 
       const promptMessages = [
         {
           role: 'system',
           content:
-            'You are Stashov, a brutal, data-driven Personal AI Impulse-Gate & Buyer Advisor running on NVIDIA Nemotron 3 Ultra via Nebius Token Factory. Evaluate purchases against the user’s owned inventory, budget, skincare/health constraints, and discounter alternatives.',
+            `You are Stashov, a brutal, data-driven Personal AI Impulse-Gate & Buyer Advisor running on ${providerClause()}. Evaluate purchases against the user’s owned inventory, budget, skincare/health constraints, and discounter alternatives.`,
         },
         {
           role: 'user',
-          content: `Evaluate item: ${JSON.stringify(item)}\nUser Context: Remaining Monthly Budget=$${remaining}, Owned Inventory=${JSON.stringify(ctx.owned_inventory)}, Constraints=${JSON.stringify(ctx.skin_and_health_constraints)}. Extra query: ${customQuery}`,
+          content: `Evaluate item: ${JSON.stringify(item)}\nUser Context: Remaining Monthly Budget=$${remaining}, Owned Inventory=${JSON.stringify(ctx.owned_inventory)}, Constraints=${JSON.stringify(ctx.skin_and_health_constraints)}. Extra query: ${customQuery}${pastDecisions ? `\nPast decisions (newest first):\n${pastDecisions}` : ''}`,
         },
       ];
 
-      const llmRes = await callTokenFactoryChat(MODELS.ultra, promptMessages, 600);
+      const llmRes = await callChat(MODELS.ultra, promptMessages, 600);
 
       const analysis = llmRes.content || [
         `IMPULSE-GATE AUDIT (${MODELS.ultra})`,
@@ -1375,8 +1711,8 @@ async function handleRequest(req, res) {
       const tel = recordTelemetry(
         vault,
         `Impulse-Gate Deep Audit: "${item.title.slice(0, 48)}"`,
-        MODELS.ultra,
-        '1M-Context Deep Reasoning',
+        llmRes.model || MODELS.ultra,
+        llmRes.via === 'baseten' ? 'Hackathon Fallback (Baseten Spark)' : reasonTier(),
         usage.latency,
         usage.tokensIn,
         usage.tokensOut,
@@ -1387,11 +1723,56 @@ async function handleRequest(req, res) {
 
       return sendJson(res, 200, {
         ok: true,
-        model: MODELS.ultra,
-        live_nebius: llmRes.live,
+        model: llmRes.model || MODELS.ultra,
+        provider: PROVIDER,
+        live_meta: PROVIDER === 'meta' && llmRes.live,
+        live_nebius: PROVIDER === 'nebius' && llmRes.live,
+        live_baseten: llmRes.via === 'baseten' && llmRes.live,
         analysis,
         telemetry: tel,
       });
+    }
+
+    // 5a. POST /api/shelf/scan — Scan a closet/shelf photo into owned inventory
+    if (req.method === 'POST' && pathname === '/api/shelf/scan') {
+      if (!rateLimit(req, 'shelf-scan', 10, 60 * 1000)) {
+        return sendJson(res, 429, { error: 'Closet scans are limited to 10 per minute.' }, { 'Retry-After': '60' });
+      }
+      const body = await parseBody(req, SCAN_BODY_LIMIT);
+      const vault = loadVault();
+      try {
+        const parsed = parseImageDataUrl(body.image);
+        const scan = await scanClosetImage(parsed.dataUrl, { hint: body.hint });
+        if (!scan.live) {
+          return sendJson(res, 503, { error: 'Closet scan needs a live Meta Model API key. Set MODEL_API_KEY and try again.' });
+        }
+        const merged = mergeScanIntoInventory(vault, scan.items);
+        const usage = usageFromResult({ live: true, latency_ms: scan.latency_ms, usage: scan.usage });
+        const tel = recordTelemetry(
+          vault,
+          `Closet scan: ${merged.added.length} new, ${merged.duplicates.length} duplicates`,
+          scan.model,
+          'Shelf Scan',
+          usage.latency,
+          usage.tokensIn,
+          usage.tokensOut,
+          usage.cost,
+          'SUCCESS'
+        );
+        await saveVault(vault);
+        return sendJson(res, 200, {
+          ok: true,
+          model: scan.model,
+          items: scan.items,
+          added: merged.added,
+          duplicates: merged.duplicates,
+          capped: merged.capped,
+          inventory_count: (vault.personal_context.owned_inventory || []).length,
+          telemetry: tel,
+        });
+      } catch (err) {
+        return sendJson(res, err.status || 400, { error: err.message });
+      }
     }
 
     // 6. POST /api/bookmark-preview — Read a bookmark or pasted product link without gating it
@@ -1536,7 +1917,7 @@ async function handleRequest(req, res) {
       });
     }
 
-    // 8. POST /api/vault-audit — 1M-Context Vault-Wide Synthesis & Routine Conflict Check (Nemotron 3 Ultra)
+    // 8. POST /api/vault-audit — Full-Digest Vault-Wide Synthesis & Routine Conflict Check (Muse Wonder)
     if (req.method === 'POST' && pathname === '/api/vault-audit') {
       if (!rateLimit(req, 'vault-audit', 4, 60 * 1000)) {
         return sendJson(res, 429, { error: 'The vault audit is limited to 4 requests per minute.' }, { 'Retry-After': '60' });
@@ -1547,9 +1928,9 @@ async function handleRequest(req, res) {
       const question = (body.question || `Run a full audit across my ${bookmarkCount.toLocaleString('en-US')} saved bookmarks, wishlist, owned inventory and daily routines.`).trim().slice(0, 500);
       const budget = budgetSummary(vault);
       const gate = gateSummary(vault);
-      const llmRes = await callTokenFactoryChat(
+      const llmRes = await callChat(
         MODELS.ultra,
-        buildVaultAuditMessages({ vault, question, budget, gate }),
+        buildVaultAuditMessages({ vault, question, budget, gate, provider: providerClause() }),
         // Reasoning tokens count against this budget too. A 2,500-token cap
         // truncated the report mid-analysis; 8,000 leaves room to finish.
         8000
@@ -1561,9 +1942,9 @@ async function handleRequest(req, res) {
       const usage = usageFromResult(llmRes);
       const tel = recordTelemetry(
         vault,
-        `1M-Context Vault Audit & Query: "${question.slice(0, 48)}"`,
-        MODELS.ultra,
-        '1M-Context Deep Reasoning',
+        `Vault Audit & Query: "${question.slice(0, 48)}"`,
+        llmRes.model || MODELS.ultra,
+        llmRes.via === 'baseten' ? 'Hackathon Fallback (Baseten Spark)' : reasonTier(),
         usage.latency,
         usage.tokensIn,
         usage.tokensOut,
@@ -1574,8 +1955,11 @@ async function handleRequest(req, res) {
 
       return sendJson(res, 200, {
         ok: true,
-        model: MODELS.ultra,
-        live_nebius: llmRes.live,
+        model: llmRes.model || MODELS.ultra,
+        provider: PROVIDER,
+        live_meta: PROVIDER === 'meta' && llmRes.live,
+        live_nebius: PROVIDER === 'nebius' && llmRes.live,
+        live_baseten: llmRes.via === 'baseten' && llmRes.live,
         report,
         telemetry: tel,
       });
@@ -1642,6 +2026,138 @@ async function handleRequest(req, res) {
         },
         snapshot: snapshot ? 'saved in data/backups' : null,
       });
+    }
+
+    // 9c. POST /api/import/tiktok — bulk-import a TikTok data-download file
+    if (req.method === 'POST' && pathname === '/api/import/tiktok') {
+      if (!rateLimit(req, 'import-tiktok', 3, 60 * 1000)) {
+        return sendJson(res, 429, { error: 'Wait a minute between TikTok imports.' }, { 'Retry-After': '60' });
+      }
+      const body = await parseBody(req, IMPORT_LIMIT);
+      const links = extractTikTokLinks(body.content || body.text || '');
+      if (!links.length) {
+        return sendJson(res, 400, { error: 'No TikTok links found in that file. Use the JSON or TXT file from TikTok Settings → Download your data.' });
+      }
+      const vault = loadVault();
+      const seenUrls = new Set((vault.bookmarks || []).map((b) => String(b.url || '')));
+      const seenIds = new Set((vault.bookmarks || []).map((b) => tikTokVideoId(b.url)).filter(Boolean));
+      let added = 0;
+      let skipped = 0;
+      const stamp = Date.now();
+      for (const entry of links) {
+        const videoId = tikTokVideoId(entry.url);
+        if (seenUrls.has(entry.url) || (videoId && seenIds.has(videoId))) { skipped += 1; continue; }
+        seenUrls.add(entry.url);
+        if (videoId) seenIds.add(videoId);
+        const title = entry.title || `TikTok save ${videoId || stamp + added}`;
+        const [category, itemType, subcategory] = classifyBookmark({ name: title, url: entry.url, folder: 'shopping' });
+        vault.bookmarks.unshift({
+          id: nextBookmarkId(vault),
+          title: title.slice(0, 140),
+          url: entry.url,
+          domain: 'tiktok.com',
+          original_folder: 'TikTok Import',
+          browser: 'TikTok Export',
+          category,
+          subcategory,
+          item_type: itemType,
+          tags: ['tiktok', 'favorites', 'reference'],
+          snapshot_status: 'Imported from TikTok data download',
+          rot_status: 'Unchecked',
+          saved_at: entry.date || '',
+          embedding: deterministicVec(`${title} ${entry.url} ${category}`),
+        });
+        added += 1;
+        if (added >= 500) break;
+      }
+      recordTelemetry(vault, `TikTok import: ${added} saves filed, ${skipped} already present`, 'Local parser', 'Data portability', 0, 0, 0, 0);
+      await saveVault(vault);
+      return sendJson(res, 200, { ok: true, parsed: links.length, added, skipped });
+    }
+
+    // 10a. POST /api/persona/load — Judge Mode: swap in the demo persona (snapshots the current vault first)
+    if (req.method === 'POST' && pathname === '/api/persona/load') {
+      if (!rateLimit(req, 'persona-load', 3, 60 * 1000)) {
+        return sendJson(res, 429, { error: 'Wait a minute before loading another vault.' }, { 'Retry-After': '60' });
+      }
+      try {
+        const snapshot = snapshotVault('pre-persona');
+        const incoming = loadPersonaVault();
+        ensureGateState(incoming);
+        await writeVault(incoming);
+        recordTelemetry(
+          incoming,
+          `Demo persona loaded: ${incoming.bookmarks.length} bookmarks, ${incoming.wishlist.length} wishes`,
+          'Judge Mode',
+          'Demo persona',
+          0, 0, 0, 0
+        );
+        return sendJson(res, 200, {
+          ok: true,
+          persona: (incoming.meta && incoming.meta.persona_name) || 'demo',
+          loaded: {
+            bookmarks: incoming.bookmarks.length,
+            wishlist: incoming.wishlist.length,
+            protocols: incoming.protocols.length,
+            journal: (incoming.decision_journal || []).length,
+          },
+          snapshot: snapshot ? 'saved in data/backups' : null,
+        });
+      } catch (err) {
+        return sendJson(res, err.status || 500, { error: err.message });
+      }
+    }
+
+    // 10b. POST /api/persona/restore — Judge Mode: restore the vault snapshotted before the persona swap
+    if (req.method === 'POST' && pathname === '/api/persona/restore') {
+      if (!rateLimit(req, 'persona-restore', 3, 60 * 1000)) {
+        return sendJson(res, 429, { error: 'Wait a minute before restoring another vault.' }, { 'Retry-After': '60' });
+      }
+      try {
+        const snapshotPath = findPrePersonaSnapshot();
+        const incoming = readSnapshotVault(snapshotPath);
+        snapshotVault('pre-restore');
+        ensureGateState(incoming);
+        await writeVault(incoming);
+        recordTelemetry(
+          incoming,
+          `Vault restored from pre-persona snapshot: ${incoming.wishlist.length} wishes`,
+          'Judge Mode',
+          'Demo persona',
+          0, 0, 0, 0
+        );
+        return sendJson(res, 200, {
+          ok: true,
+          restored: {
+            bookmarks: incoming.bookmarks.length,
+            wishlist: incoming.wishlist.length,
+            protocols: incoming.protocols.length,
+          },
+        });
+      } catch (err) {
+        return sendJson(res, err.status || 500, { error: err.message });
+      }
+    }
+
+    // 10c. POST /api/persona/fresh — Judge Mode: start a blank vault (snapshots the current vault first)
+    if (req.method === 'POST' && pathname === '/api/persona/fresh') {
+      if (!rateLimit(req, 'persona-fresh', 3, 60 * 1000)) {
+        return sendJson(res, 429, { error: 'Wait a minute before starting another vault.' }, { 'Retry-After': '60' });
+      }
+      try {
+        const snapshot = snapshotVault('pre-persona');
+        const incoming = freshVault();
+        ensureGateState(incoming);
+        await writeVault(incoming);
+        recordTelemetry(incoming, 'Fresh vault started from Judge Mode', 'Judge Mode', 'Demo persona', 0, 0, 0, 0);
+        return sendJson(res, 200, {
+          ok: true,
+          fresh: true,
+          snapshot: snapshot ? 'saved in data/backups' : null,
+        });
+      } catch (err) {
+        return sendJson(res, err.status || 500, { error: err.message });
+      }
     }
 
     // 11. Re-check one wish against its saved product page and record the result.

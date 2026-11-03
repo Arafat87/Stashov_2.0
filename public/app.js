@@ -26,16 +26,18 @@ const TABS = {
   deck: 'COMMAND DECK',
   vault: 'SIGNAL INDEX',
   library: 'REFERENCE LIBRARY',
+  references: 'CAPTURED REFERENCES',
   wishlist: 'IMPULSE GATE',
   protocols: 'LIVING PLAYBOOKS',
   context: 'IDENTITY BUFFER',
   ingest: 'CAPTURE STUDIO',
-  router: 'TOKEN FACTORY ROUTER'
+  router: 'META MODEL ROUTER'
 };
 const TITLES = {
-  deck: 'Neural Vault Command Deck',
+  deck: 'Memory Ledger',
   vault: 'Signal Index',
   library: 'Reference Library',
+  references: 'Captured References',
   wishlist: 'Impulse Gate',
   protocols: 'Living Playbooks',
   context: 'Identity Buffer',
@@ -43,31 +45,32 @@ const TITLES = {
   router: 'Router Telemetry'
 };
 const CLUSTER_VISUALS = {
-  'Programming, Cloud & Dev Tools': { slug: 'programming-cloud', color: '#c6ff4a' },
-  'Life Hacks, Utilities & Reference': { slug: 'life-hacks', color: '#63e6ff' },
-  'AI Models, Agents & Infra': { slug: 'ai-models', color: '#a98bff' },
-  'Career, Jobs & Interview Prep': { slug: 'career', color: '#ffc35c' },
-  'Menswear & Streetwear': { slug: 'menswear', color: '#52f2ab' },
-  'Business, Finance & Auto/Real Estate': { slug: 'business', color: '#ff6b8a' },
-  'Watches, Footwear & Accessories': { slug: 'watches', color: '#8ab4ff' },
-  'Gaming, Mods & Esports': { slug: 'gaming', color: '#c6ff4a' },
-  'Soccer Kits & Sportswear': { slug: 'soccer', color: '#63e6ff' },
-  'Skincare, Health & Protocols': { slug: 'skincare', color: '#a98bff' },
-  'Global Sourcing & Proxies': { slug: 'sourcing', color: '#ffc35c' },
-  'Fragrances & Cologne': { slug: 'fragrances', color: '#52f2ab' },
-  'Cybersecurity & NetSec': { slug: 'cybersecurity', color: '#ff6b8a' },
-  'Food, Halal & Specialty Groceries': { slug: 'food', color: '#8ab4ff' },
+  'Programming, Cloud & Dev Tools': { slug: 'programming-cloud', color: '#667c2e' },
+  'Life Hacks, Utilities & Reference': { slug: 'life-hacks', color: '#31517e' },
+  'AI Models, Agents & Infra': { slug: 'ai-models', color: '#96603a' },
+  'Career, Jobs & Interview Prep': { slug: 'career', color: '#a96f12' },
+  'Menswear & Streetwear': { slug: 'menswear', color: '#3d6b4c' },
+  'Business, Finance & Auto/Real Estate': { slug: 'business', color: '#a83c2a' },
+  'Watches, Footwear & Accessories': { slug: 'watches', color: '#5d6d7a' },
+  'Gaming, Mods & Esports': { slug: 'gaming', color: '#667c2e' },
+  'Soccer Kits & Sportswear': { slug: 'soccer', color: '#31517e' },
+  'Skincare, Health & Protocols': { slug: 'skincare', color: '#96603a' },
+  'Global Sourcing & Proxies': { slug: 'sourcing', color: '#a96f12' },
+  'Fragrances & Cologne': { slug: 'fragrances', color: '#3d6b4c' },
+  'Cybersecurity & NetSec': { slug: 'cybersecurity', color: '#a83c2a' },
+  'Food, Halal & Specialty Groceries': { slug: 'food', color: '#5d6d7a' },
 };
 const SECTION_ICONS = ['i-deck', 'i-vault', 'i-book', 'i-gate', 'i-pulse', 'i-fingerprint', 'i-spark', 'i-router', 'i-search', 'i-command', 'i-coin', 'i-lock', 'i-clock', 'i-alert', 'i-code', 'i-briefcase'];
 const DEFAULT_SECTIONS = [
-  ['deck', 'Deck', 'i-deck', '#c6ff4a'],
-  ['vault', 'Vault', 'i-vault', '#63e6ff'],
-  ['library', 'Library', 'i-book', '#8ab4ff'],
-  ['wishlist', 'Gate', 'i-gate', '#ffc35c'],
-  ['protocols', 'Rules', 'i-pulse', '#a98bff'],
-  ['context', 'You', 'i-fingerprint', '#ff6b8a'],
-  ['ingest', 'Capture', 'i-spark', '#52f2ab'],
-  ['router', 'Router', 'i-router', '#8ab4ff']
+  ['deck', 'Deck', 'i-deck', '#667c2e'],
+  ['vault', 'Vault', 'i-vault', '#31517e'],
+  ['library', 'Library', 'i-book', '#5d6d7a'],
+  ['references', 'Refs', 'i-book', '#96603a'],
+  ['wishlist', 'Gate', 'i-gate', '#a96f12'],
+  ['protocols', 'Rules', 'i-pulse', '#96603a'],
+  ['context', 'You', 'i-fingerprint', '#a83c2a'],
+  ['ingest', 'Capture', 'i-spark', '#3d6b4c'],
+  ['router', 'Router', 'i-router', '#5d6d7a']
 ].map(([id, label, icon, color], order) => ({
   id, builtin: true, label, icon, logo: '', color, tags: [], description: '', visible: true, order, cards: []
 }));
@@ -118,6 +121,8 @@ const state = {
     meta: null, seq: 0, abort: null, editingId: null, timer: null,
     selectMode: false, selected: [], duplicates: null, duplicateExtra: 0
   },
+  refs: { items: [], loaded: false, loading: false, q: '' },
+  notes: { items: [], categories: [], loaded: false, loading: false, category: 'ALL', q: '', editingId: null },
   routineLinkedIds: [],
   routineSearch: '',
   routineSelectedOnly: false,
@@ -308,18 +313,55 @@ function setTab(tab, options = {}) {
   if (tab === 'library' && !state.library.loading) {
     loadLibrary(!state.library.loaded);
   }
+  if (tab === 'references' && !state.refs.loading) {
+    loadReferences(!state.refs.loaded);
+    loadNotes();
+  }
 }
 
 function renderMode(v) {
   const pill = $('#modePill');
   if (!pill) return;
-  const live = Boolean(v && v.nebius_configured);
+  const live = Boolean(v && (v.meta_configured || v.nebius_configured || v.baseten_configured));
   pill.className = 'mode-pill' + (live ? '' : ' is-demo');
-  pill.innerHTML = `<i></i> ${live ? 'NEBIUS LIVE' : 'DEMO FALLBACK'}`;
+  pill.innerHTML = `<i></i> ${live ? 'META LIVE' : 'DEMO FALLBACK'}`;
   pill.title = live
-    ? 'Requests are routed to Nebius Token Factory with a live API key.'
-    : 'No live NEBIUS_API_KEY detected. Deterministic fallback traces are used.';
+    ? 'Requests are routed to Meta Muse models with a live API key.'
+    : 'No live MODEL_API_KEY detected. Deterministic fallback traces are used.';
 }
+function renderPersonaBtn(v) {
+  const btn = $('#personaBtn');
+  if (!btn) return;
+  const isPersona = Boolean(v && v.meta && v.meta.persona);
+  btn.innerHTML = isPersona
+    ? '<svg class="icon"><use href="#i-refresh"/></svg><span>Restore my vault</span>'
+    : '<svg class="icon"><use href="#i-spark"/></svg><span>Demo as Jordan</span>';
+  btn.title = isPersona
+    ? 'Restore your own vault from the snapshot taken before the demo.'
+    : 'Load the Jordan demo persona (your vault is snapshotted first).';
+}
+
+async function togglePersona(btn) {
+  const isPersona = Boolean(state.vault && state.vault.meta && state.vault.meta.persona);
+  busy(btn, true, isPersona ? 'Restoring' : 'Loading');
+  try {
+    if (isPersona) {
+      await postJSON('/api/persona/restore', {});
+      toast('Your vault is restored.');
+    } else {
+      await postJSON('/api/persona/load', {});
+      toast('Demo persona loaded: Jordan. Your real vault is snapshotted and one click restores it.');
+    }
+    await refreshVault(true);
+    delete btn.dataset.original;
+  } catch (err) {
+    toast(err.message, 'err');
+  } finally {
+    busy(btn, false);
+    renderPersonaBtn(state.vault);
+  }
+}
+
 function renderModeOffline() {
   const pill = $('#modePill');
   if (!pill) return;
@@ -345,6 +387,7 @@ function renderAll() {
   const v = state.vault;
   if (!v) return;
   renderMode(v);
+  renderPersonaBtn(v);
   renderBudget(v);
   renderOverview(v);
   renderSections();
@@ -539,8 +582,8 @@ function renderTicker(v) {
     `${v.gate && Number.isFinite(v.gate.active) ? v.gate.active : (v.wishlist || []).length} active wishes interrogated`,
     `${(v.gate && Array.isArray(v.gate.target_hits) ? v.gate.target_hits.length : 0)} target prices met`,
     `${money(totalMarkup(v))} retail markup caught`,
-    'NEMOTRON 3 ULTRA · 1M CONTEXT',
-    'NEBIUS TOKEN FACTORY · ROUTING LIVE',
+    'MUSE WONDER 1.0 · DECISION JOURNAL',
+    'META MODEL API · ROUTING LIVE',
     'LOCAL VAULT · PRIVATE BY DESIGN'
   ];
   const sequence = items.map((item) => `<span class="ticker-item">${esc(item)}</span>`).join('');
@@ -586,7 +629,7 @@ function customCardMarkup(card, sectionId) {
     ? `<a href="${esc(safeUrl(card.url))}" target="_blank" rel="noopener noreferrer">${esc(card.title || 'Untitled card')}</a>`
     : esc(card.title || 'Untitled card');
   return `
-  <article class="custom-card" style="--tone:${esc(card.color || '#c6ff4a')}">
+  <article class="custom-card" style="--tone:${esc(card.color || '#667c2e')}">
     <div class="custom-card-media">
       <span class="media-fallback" aria-hidden="true"><strong>${esc(initial)}</strong><span>No photo</span></span>
       ${image ? `<img src="${esc(image)}" alt="" loading="lazy" />` : ''}
@@ -1813,7 +1856,7 @@ async function syncBookmarks(btn) {
 /* ————— REFERENCE LIBRARY ————— */
 function librarySectionMeta(id) {
   return (state.library.sections || []).find((section) => section.id === id) || {
-    id, label: id || 'Reference', color: '#8ab4ff', use_for: 'reference material.'
+    id, label: id || 'Reference', color: '#5d6d7a', use_for: 'reference material.'
   };
 }
 
@@ -1857,7 +1900,7 @@ function libraryCardMarkup(item, index) {
   const selected = state.library.selected.includes(item.id);
   const archived = Boolean(item.archived || item.library_archived);
   return `
-  <article class="library-card ${selected ? 'is-selected' : ''} ${archived ? 'is-archived' : ''}" data-library-id="${esc(item.id)}" style="--library-tone:${esc(section.color || '#8ab4ff')};--i:${Math.min(index, 10)}">
+  <article class="library-card ${selected ? 'is-selected' : ''} ${archived ? 'is-archived' : ''}" data-library-id="${esc(item.id)}" style="--library-tone:${esc(section.color || '#5d6d7a')};--i:${Math.min(index, 10)}">
     <div class="library-card-top">
       ${state.library.selectMode ? `<label class="library-pick"><input type="checkbox" data-library-pick="${esc(item.id)}" aria-label="Select ${esc(item.title || item.domain || 'link')}" ${selected ? 'checked' : ''} /><span aria-hidden="true"><svg class="icon"><use href="#i-check"/></svg></span></label>` : ''}
       <span class="library-domain" title="${esc(item.domain || '')}">${esc(item.domain || 'unknown')}</span>
@@ -3849,18 +3892,21 @@ async function runImpulseAudit(id) {
   const rerun = $('#oracleRerun');
   if ($('#oracleTitle')) $('#oracleTitle').textContent = item.title;
   if ($('#oracleKicker')) $('#oracleKicker').textContent = 'IMPULSE GATE / ' + String(item.verdict || 'DEEP AUDIT').replace(/_/g, ' ');
-  if (meta) meta.textContent = `Routing through Nebius Token Factory · ${item.category || 'UNCLUSTERED'}`;
-  if (out) out.textContent = 'Establishing a deep-reasoning session with NVIDIA Nemotron 3 Ultra…\n\nCross-referencing owned inventory, monthly budget, routine constraints, discounter floors, and anti-hype community reviews.';
+  if (meta) meta.textContent = `Routing through Muse Wonder · ${item.category || 'UNCLUSTERED'}`;
+  if (out) out.innerHTML = '<span class="oracle-thinking">Muse Wonder is thinking<span class="thinking-dots"><i></i><i></i><i></i></span></span>\n\nReading your decision journal, closet, budget and price floors before it argues…';
   if (status) status.textContent = 'ROUTING';
   if (rerun) rerun.disabled = true;
   try {
     const data = await postJSON('/api/impulse-gate', { id });
-    if (out) out.textContent = data.analysis || JSON.stringify(data, null, 2);
-    if (meta) meta.textContent = `${data.model || 'Nemotron 3 Ultra'} · ${data.live_nebius ? 'LIVE TOKEN FACTORY' : 'DETERMINISTIC FALLBACK'} · ${data.telemetry ? data.telemetry.latency_ms : '—'} ms`;
-    if (status) status.textContent = data.live_nebius ? 'LIVE' : 'FALLBACK';
+    if (out) {
+      const raw = data.analysis || JSON.stringify(data, null, 2);
+      out.innerHTML = esc(raw).replace(/([^.\n]*(?:decision journal|you (?:decided|skipped|bought|snoozed)|your (?:past|previous) (?:decision|skip|purchase))[^.\n]*\.?)/gi, '<mark class="journal-hit">$1</mark>');
+    }
+    if (meta) meta.textContent = `${data.model || 'Muse Wonder 1.0'} · ${(data.live_meta || data.live_nebius || data.live_baseten) ? 'LIVE META API' : 'DETERMINISTIC FALLBACK'} · ${data.telemetry ? data.telemetry.latency_ms : '—'} ms`;
+    if (status) status.textContent = (data.live_meta || data.live_nebius || data.live_baseten) ? 'LIVE' : 'FALLBACK';
     refreshVault();
   } catch (err) {
-    if (out) out.textContent = `ORACLE ROUTE FAILED\n\n${err.message}\n\nCheck the local server and NEBIUS_API_KEY, then re-run the audit.`;
+    if (out) out.textContent = `ORACLE ROUTE FAILED\n\n${err.message}\n\nCheck the local server and MODEL_API_KEY, then re-run the audit.`;
     if (meta) meta.textContent = 'The deep-reasoning route could not be established.';
     if (status) status.textContent = 'ERROR';
     toast(err.message, 'err');
@@ -3875,13 +3921,13 @@ async function runVaultAudit(btn) {
   if (!question) { toast('Give the oracle a question first.', 'warn'); if (input) input.focus(); return; }
   const out = $('#auditOutput');
   const status = $('#auditStatus');
-  if (out) out.textContent = 'Opening a 1M-token context window across browser bookmarks, wishlist, owned inventory, protocols, and personal constraints…\n\nThis is the expensive route. Nemotron 3 Ultra is thinking.';
+  if (out) out.innerHTML = '<span class="oracle-thinking">Muse Wonder is thinking<span class="thinking-dots"><i></i><i></i><i></i></span></span>\n\nOpening your memory ledger — bookmarks, wishlist, closet, routines and your decision journal.';
   if (status) status.textContent = 'SYNTHESIZING';
   busy(btn, true, 'Synthesizing');
   try {
     const data = await postJSON('/api/vault-audit', { question });
     if (out) out.textContent = data.report || JSON.stringify(data, null, 2);
-    if (status) status.textContent = data.live_nebius ? 'LIVE' : 'FALLBACK';
+    if (status) status.textContent = (data.live_meta || data.live_nebius || data.live_baseten) ? 'LIVE' : 'FALLBACK';
     toast('Vault-wide synthesis complete. Telemetry updated.');
     await refreshVault();
   } catch (err) {
@@ -3894,6 +3940,338 @@ async function runVaultAudit(btn) {
 }
 
 /* ————— INGEST ————— */
+/* ----- NOTES (Refs board primary content) ----- */
+function noteCategoryLabel(id) {
+  const found = state.notes.categories.find((c) => c.id === id);
+  return found ? found.label : 'Reference';
+}
+
+async function loadNotes() {
+  if (state.notes.loading) return;
+  state.notes.loading = true;
+  try {
+    const data = await getJSON('/api/notes');
+    state.notes.items = data.notes || [];
+    state.notes.categories = data.categories || [];
+    state.notes.loaded = true;
+    renderNoteCats();
+    renderNotes();
+    fillNoteCategorySelect();
+  } catch (err) {
+    toast(`Notes failed to load. ${err.message}`, 'err');
+  } finally {
+    state.notes.loading = false;
+  }
+}
+
+function fillNoteCategorySelect() {
+  const select = $('#noteCatSelect');
+  if (!select) return;
+  select.innerHTML = state.notes.categories.map((c) => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join('');
+}
+
+function renderNoteCats() {
+  const bar = $('#noteCats');
+  if (!bar) return;
+  const counts = {};
+  for (const n of state.notes.items) counts[n.category] = (counts[n.category] || 0) + 1;
+  const chip = (id, label, count) => `<span class="note-cat${state.notes.category === id ? ' is-active' : ''}"><button type="button" data-note-cat="${esc(id)}">${esc(label)} · ${count}</button>${id !== 'ALL' ? `<button type="button" class="note-cat-del" data-note-cat-del="${esc(id)}" aria-label="Delete category ${esc(label)}">&times;</button>` : ''}</span>`;
+  bar.innerHTML = chip('ALL', 'All', state.notes.items.length)
+    + state.notes.categories.map((c) => chip(c.id, c.label, counts[c.id] || 0)).join('')
+    + `<form class="note-cat-add" id="noteCatForm"><input type="text" id="noteCatLabel" placeholder="new category" autocomplete="off" aria-label="New category name" /><button class="btn ghost sm" type="submit">Add</button></form>`;
+}
+
+function renderNotes() {
+  const grid = $('#notesGrid');
+  if (!grid) return;
+  const count = $('#notesCount');
+  if (count) count.textContent = String(state.notes.items.length);
+  const q = state.notes.q.trim().toLowerCase();
+  const items = state.notes.items.filter((n) => {
+    if (state.notes.category !== 'ALL' && n.category !== state.notes.category) return false;
+    if (!q) return true;
+    return `${n.title} ${n.body} ${(n.tags || []).join(' ')}`.toLowerCase().includes(q);
+  });
+  const empty = $('#notesEmpty');
+  if (empty) empty.hidden = items.length > 0;
+  grid.innerHTML = items.map((n) => {
+    if (state.notes.editingId === n.id) {
+      return `<article class="ref-card glass"><div class="ref-body">
+        <input type="text" class="note-edit-title" data-note-title="${esc(n.id)}" value="${esc(n.title)}" aria-label="Note title" />
+        <select data-note-category="${esc(n.id)}" aria-label="Note category">${state.notes.categories.map((c) => `<option value="${esc(c.id)}"${c.id === n.category ? ' selected' : ''}>${esc(c.label)}</option>`).join('')}</select>
+        <textarea rows="5" data-note-body="${esc(n.id)}" aria-label="Note text">${esc(n.body)}</textarea>
+        <input type="text" data-note-tags="${esc(n.id)}" value="${esc((n.tags || []).join(', '))}" placeholder="tags, comma separated" aria-label="Note tags" />
+        <div class="import-row"><button class="btn sm" type="button" data-note-save="${esc(n.id)}">Save</button><button class="btn ghost sm" type="button" data-note-cancel="1">Cancel</button></div>
+      </div></article>`;
+    }
+    const excerpt = n.body.length > 240 ? `${n.body.slice(0, 240)}…` : n.body;
+    return `<article class="ref-card glass"><div class="ref-body">
+      <h4>${esc(n.title)}</h4>
+      <p class="ref-meta">${esc(noteCategoryLabel(n.category))}${n.source_type ? ` · ${esc(n.source_type)}` : ''}</p>
+      ${excerpt ? `<p class="ref-desc note-body">${esc(excerpt)}</p>` : ''}
+      <div class="ref-tags">${(n.tags || []).map((tag) => `<span class="ref-tag">${esc(tag)}<button type="button" data-note-untag="${esc(tag)}" data-note-id="${esc(n.id)}" aria-label="Remove tag">&times;</button></span>`).join('')}</div>
+      <form class="ref-add" data-note-tagform="${esc(n.id)}"><input type="text" name="tag" placeholder="add tag + Enter" autocomplete="off" aria-label="Add a tag" /></form>
+      <div class="import-row">
+        ${n.source_url ? `<a class="btn ghost sm" href="${esc(n.source_url)}" target="_blank" rel="noopener">Source</a>` : ''}
+        <button class="btn ghost sm" type="button" data-note-edit="${esc(n.id)}">Edit</button>
+        <button class="btn ghost sm" type="button" data-note-delete="${esc(n.id)}">Delete</button>
+      </div>
+    </div></article>`;
+  }).join('');
+}
+
+async function saveNoteTags(note, tags) {
+  const data = await putJSON(`/api/notes/${encodeURIComponent(note.id)}`, { tags });
+  note.tags = data.note.tags;
+  renderNotes();
+}
+
+(function bindNotes() {
+  const grid = $('#notesGrid');
+  if (grid) {
+    grid.addEventListener('click', async (event) => {
+      const untag = event.target.closest('[data-note-untag]');
+      if (untag) {
+        const note = state.notes.items.find((n) => n.id === untag.dataset.noteId);
+        if (note) { try { await saveNoteTags(note, (note.tags || []).filter((t) => t !== untag.dataset.noteUntag)); } catch (err) { toast(err.message, 'err'); } }
+        return;
+      }
+      const edit = event.target.closest('[data-note-edit]');
+      if (edit) { state.notes.editingId = edit.dataset.noteEdit; renderNotes(); return; }
+      const cancel = event.target.closest('[data-note-cancel]');
+      if (cancel) { state.notes.editingId = null; renderNotes(); return; }
+      const save = event.target.closest('[data-note-save]');
+      if (save) {
+        const id = save.dataset.noteSave;
+        const note = state.notes.items.find((n) => n.id === id);
+        if (!note) return;
+        const payload = {
+          title: grid.querySelector(`[data-note-title="${id}"]`).value,
+          body: grid.querySelector(`[data-note-body="${id}"]`).value,
+          category: grid.querySelector(`[data-note-category="${id}"]`).value,
+          tags: grid.querySelector(`[data-note-tags="${id}"]`).value.split(',').map((t) => t.trim()).filter(Boolean),
+        };
+        try {
+          const data = await putJSON(`/api/notes/${encodeURIComponent(id)}`, payload);
+          Object.assign(note, data.note);
+          state.notes.editingId = null;
+          renderNoteCats();
+          renderNotes();
+          toast('Note saved.');
+        } catch (err) { toast(err.message, 'err'); }
+        return;
+      }
+      const del = event.target.closest('[data-note-delete]');
+      if (del) {
+        const note = state.notes.items.find((n) => n.id === del.dataset.noteDelete);
+        if (!note || !window.confirm(`Delete note "${note.title}"?`)) return;
+        try {
+          await deleteJSON(`/api/notes/${encodeURIComponent(note.id)}`);
+          state.notes.items = state.notes.items.filter((n) => n.id !== note.id);
+          renderNoteCats();
+          renderNotes();
+          toast('Note deleted.');
+        } catch (err) { toast(err.message, 'err'); }
+      }
+    });
+    grid.addEventListener('submit', async (event) => {
+      const form = event.target.closest('[data-note-tagform]');
+      if (!form) return;
+      event.preventDefault();
+      const value = (form.querySelector('input[name="tag"]').value || '').trim();
+      const note = state.notes.items.find((n) => n.id === form.dataset.noteTagform);
+      if (!value || !note) return;
+      try { await saveNoteTags(note, [...(note.tags || []), value]); } catch (err) { toast(err.message, 'err'); }
+    });
+  }
+  const cats = $('#noteCats');
+  if (cats) {
+    cats.addEventListener('click', async (event) => {
+      const del = event.target.closest('[data-note-cat-del]');
+      if (del) {
+        const cat = state.notes.categories.find((c) => c.id === del.dataset.noteCatDel);
+        if (!cat || !window.confirm(`Delete category "${cat.label}"? Its notes move to Reference.`)) return;
+        try {
+          const data = await deleteJSON(`/api/note-categories/${encodeURIComponent(cat.id)}`);
+          state.notes.categories = data.categories;
+          await loadNotes();
+          toast(`Category deleted; ${data.moved} note(s) moved.`);
+        } catch (err) { toast(err.message, 'err'); }
+        return;
+      }
+      const pick = event.target.closest('[data-note-cat]');
+      if (pick) { state.notes.category = pick.dataset.noteCat; renderNoteCats(); renderNotes(); }
+    });
+    cats.addEventListener('submit', async (event) => {
+      if (event.target.id !== 'noteCatForm') return;
+      event.preventDefault();
+      const input = $('#noteCatLabel');
+      const label = (input.value || '').trim();
+      if (!label) return;
+      try {
+        const data = await postJSON('/api/note-categories', { label });
+        state.notes.categories = data.categories;
+        input.value = '';
+        fillNoteCategorySelect();
+        renderNoteCats();
+        toast(`Category "${data.category.label}" created.`);
+      } catch (err) { toast(err.message, 'err'); }
+    });
+  }
+  const search = $('#notesSearch');
+  if (search) search.addEventListener('input', () => { state.notes.q = search.value; renderNotes(); });
+  const refresh = $('#notesRefreshBtn');
+  if (refresh) refresh.addEventListener('click', () => loadNotes());
+  const newBtn = $('#noteNewBtn');
+  const form = $('#noteForm');
+  if (newBtn && form) {
+    newBtn.addEventListener('click', () => { form.hidden = !form.hidden; if (!form.hidden) $('#noteTitle').focus(); });
+    $('#noteCancelBtn').addEventListener('click', () => { form.hidden = true; });
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = {
+        title: $('#noteTitle').value,
+        body: $('#noteBody').value,
+        category: $('#noteCatSelect').value,
+        tags: $('#noteTags').value.split(',').map((t) => t.trim()).filter(Boolean),
+      };
+      try {
+        const data = await postJSON('/api/notes', payload);
+        state.notes.items.unshift(data.note);
+        form.reset();
+        form.hidden = true;
+        fillNoteCategorySelect();
+        renderNoteCats();
+        renderNotes();
+        toast('Note filed.');
+      } catch (err) {
+        const errEl = $('#noteFormError');
+        if (errEl) { errEl.hidden = false; errEl.textContent = err.message; }
+        toast(err.message, 'err');
+      }
+    });
+  }
+})();
+
+/* ----- REFERENCES (captured cards + tag editor) ----- */
+function isReferenceBookmark(b) {
+  if (!b || typeof b !== 'object') return false;
+  const folder = String(b.original_folder || '');
+  if (folder.startsWith('Ingest Studio') || folder === 'TikTok Import') return true;
+  return Array.isArray(b.tags) && b.tags.includes('reference');
+}
+
+async function loadReferences(force = false) {
+  if (state.refs.loading || (state.refs.loaded && !force)) return;
+  state.refs.loading = true;
+  try {
+    const data = await getJSON('/api/bookmarks?limit=500');
+    state.refs.items = (data.items || []).filter(isReferenceBookmark);
+    state.refs.loaded = true;
+    renderReferences();
+  } catch (err) {
+    toast(`References failed to load. ${err.message}`, 'err');
+  } finally {
+    state.refs.loading = false;
+  }
+}
+
+async function saveRefTags(id, tags) {
+  const data = await putJSON(`/api/bookmarks/${encodeURIComponent(id)}/tags`, { tags });
+  const item = state.refs.items.find((b) => b.id === id);
+  if (item) item.tags = data.bookmark.tags;
+  if (item && !isReferenceBookmark(item)) {
+    state.refs.items = state.refs.items.filter((b) => b.id !== id);
+  }
+  renderReferences();
+}
+
+function renderReferences() {
+  const grid = $('#refsGrid');
+  if (!grid) return;
+  const count = $('#refsCount');
+  if (count) count.textContent = String(state.refs.items.length);
+  const q = state.refs.q.trim().toLowerCase();
+  const items = state.refs.items.filter((b) => {
+    if (!q) return true;
+    const hay = `${b.title || ''} ${b.domain || ''} ${b.category || ''} ${(b.tags || []).join(' ')} ${b.description || ''}`.toLowerCase();
+    return hay.includes(q);
+  });
+  const empty = $('#refsEmpty');
+  if (empty) empty.hidden = items.length > 0;
+  grid.innerHTML = items.map((b) => {
+    const img = safeImage(b.image);
+    const products = b.video && Array.isArray(b.video.products) ? b.video.products : [];
+    return `<article class="ref-card glass">
+      ${img ? `<a class="ref-thumb" href="${esc(b.url || '#')}" target="_blank" rel="noopener"><img src="${esc(img)}" alt="" loading="lazy" /></a>` : ''}
+      <div class="ref-body">
+        <h4><a href="${esc(b.url || '#')}" target="_blank" rel="noopener">${esc(b.title || 'Untitled capture')}</a></h4>
+        <p class="ref-meta">${esc(b.domain || '')} · ${esc(b.category || 'Unclustered')}</p>
+        ${b.description ? `<p class="ref-desc">${esc(b.description)}</p>` : ''}
+        ${products.length ? `<p class="ref-desc">Spotted: ${products.map((p) => esc(p.name)).join('; ')}</p>` : ''}
+        <div class="ref-tags">${(b.tags || []).map((tag) => `<span class="ref-tag">${esc(tag)}<button type="button" data-ref-remove="${esc(tag)}" data-ref-id="${esc(b.id)}" aria-label="Remove tag">&times;</button></span>`).join('')}</div>
+        <form class="ref-add" data-ref-form="${esc(b.id)}">
+          <input type="text" name="tag" placeholder="add tag + Enter" autocomplete="off" aria-label="Add a tag" />
+        </form>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+(function bindReferences() {
+  const grid = $('#refsGrid');
+  if (grid) {
+    grid.addEventListener('click', async (event) => {
+      const btn = event.target.closest('[data-ref-remove]');
+      if (!btn) return;
+      const item = state.refs.items.find((b) => b.id === btn.dataset.refId);
+      if (!item) return;
+      try {
+        await saveRefTags(item.id, (item.tags || []).filter((t) => t !== btn.dataset.refRemove));
+      } catch (err) { toast(err.message, 'err'); }
+    });
+    grid.addEventListener('submit', async (event) => {
+      const form = event.target.closest('[data-ref-form]');
+      if (!form) return;
+      event.preventDefault();
+      const input = form.querySelector('input[name="tag"]');
+      const value = (input.value || '').trim();
+      const item = state.refs.items.find((b) => b.id === form.dataset.refForm);
+      if (!value || !item) return;
+      try {
+        await saveRefTags(item.id, [...(item.tags || []), value]);
+      } catch (err) { toast(err.message, 'err'); }
+    });
+  }
+  const search = $('#refsSearch');
+  if (search) search.addEventListener('input', () => { state.refs.q = search.value; renderReferences(); });
+  const refresh = $('#refsRefreshBtn');
+  if (refresh) refresh.addEventListener('click', () => loadReferences(true));
+  const importBtn = $('#tiktokImportBtn');
+  if (importBtn) {
+    importBtn.addEventListener('click', async () => {
+      const fileEl = $('#tiktokFile');
+      const out = $('#tiktokImportResult');
+      const file = fileEl && fileEl.files && fileEl.files[0];
+      if (!file) { if (out) out.textContent = 'Choose the .json or .txt file from TikTok Settings, Download your data first.'; return; }
+      busy(importBtn, true, 'Importing');
+      try {
+        const content = await file.text();
+        const data = await postJSON('/api/import/tiktok', { content });
+        if (out) out.textContent = `Filed ${data.added} saves (${data.skipped} already in the vault, ${data.parsed} links in the file). Find them on the Refs board.`;
+        toast(`TikTok import: ${data.added} new saves filed.`);
+        state.refs.loaded = false;
+        await refreshVault(true);
+      } catch (err) {
+        if (out) out.textContent = err.message;
+        toast(err.message, 'err');
+      } finally {
+        busy(importBtn, false);
+      }
+    });
+  }
+})();
+
 const EXAMPLES = {
   glycolic: { mode: 'url', title: 'The Ordinary Glycolic Acid 7% Toning Solution', input: 'https://theordinary.com/en-us/glycolic-acid-7-toning-solution-100436.html', price: '13' },
   kit: { mode: 'url', title: 'Vintage Arsenal 1998 Home Shirt', input: 'https://www.classicfootballshirts.com/collections/arsenal', price: '110' },
@@ -3960,6 +4338,8 @@ function renderIngestResult(data) {
       <div><span>Gate verdict</span><b>${esc(gate)}</b></div>
     </div>
     ${wl ? `<div class="privacy-note"><svg class="icon"><use href="#i-lock"/></svg><span><strong>${esc(wl.verdict_label)}</strong> — ${esc(wl.anti_hype_summary || 'Cooling-off lock active.')}</span></div>` : ''}
+    ${data.video ? `<div class="privacy-note"><svg class="icon"><use href="#i-spark"/></svg><span><strong>Video reference filed.</strong> ${data.video.products && data.video.products.length ? `Spotted: ${data.video.products.map((p) => esc(p.name)).join('; ')}. ` : ''}${data.video.transcript_chars ? `Transcript captured (${fmt(data.video.transcript_chars)} chars). ` : ''}${(data.video.warnings || []).map((w) => esc(w)).join(' ')}</span></div>` : ''}
+    ${data.note ? `<div class="privacy-note"><svg class="icon"><use href="#i-book"/></svg><span><strong>Note filed on the Refs board</strong> — “${esc(data.note.title)}”.${(data.products_filed || []).length ? ` ${data.products_filed.length} product(s) priced into the Gate.` : ''}${data.routine_created ? ` Routine saved to Rules (${data.routine_created.steps} steps).` : ''}</span></div>` : ''}
     <details><summary>Raw router payload</summary><pre class="console">${esc(JSON.stringify(data, null, 2))}</pre></details>
     <div class="card-actions">${wl ? '<button type="button" class="btn ghost sm" data-goto="wishlist">Open the impulse gate <svg class="icon"><use href="#i-arrow"/></svg></button>' : '<button type="button" class="btn ghost sm" data-goto="vault">Open signal index <svg class="icon"><use href="#i-arrow"/></svg></button>'}</div>`;
   window.setTimeout(() => panel.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'nearest' }), 60);
@@ -3969,7 +4349,7 @@ function renderIngestResult(data) {
 async function runServerlessJob(btn) {
   const out = $('#jobOutput');
   const status = $('#jobStatus');
-  if (out) { out.hidden = false; out.textContent = 'Starting Nebius Serverless Job…\n\nPoller: discounter price floor\nVerifier: bookmark link rot\nDigest: cooling timers + routine conflicts'; }
+  if (out) { out.hidden = false; out.textContent = 'Starting scheduled price loop…\n\nPoller: discounter price floor\nVerifier: bookmark link rot\nDigest: cooling timers + routine conflicts'; }
   if (status) status.textContent = 'RUNNING';
   busy(btn, true, 'Running job');
   try {
@@ -4001,9 +4381,9 @@ function paletteActions() {
     { label: 'Search the vault', hint: '/', icon: 'i-search', run: () => { setTab('vault'); window.setTimeout(() => { const el = $('#bmSearchInput'); if (el) el.focus(); }, 160); } },
     { label: 'Add a product link to the gate', hint: 'Gate', icon: 'i-plus', run: () => { setTab('wishlist'); window.setTimeout(() => { const el = $('#quickAddUrl'); if (el) el.focus(); }, 180); } },
     { label: 'Get the one-click capture bookmarklet', icon: 'i-spark', run: () => openCaptureDialog() },
-    { label: 'Ask the 1M-context oracle', icon: 'i-command', run: () => { setTab('router'); window.setTimeout(() => { const el = $('#auditInput'); if (el) el.focus(); }, 180); } },
+    { label: 'Ask the Wonder oracle', icon: 'i-command', run: () => { setTab('router'); window.setTimeout(() => { const el = $('#auditInput'); if (el) el.focus(); }, 180); } },
     { label: 'Customize sidebar sections', icon: 'i-edit', run: () => openSectionsDialog() },
-    { label: 'Run Nebius serverless job', icon: 'i-refresh', run: () => runServerlessJob($('#jobBtn')) },
+    { label: 'Run scheduled price loop', icon: 'i-refresh', run: () => runServerlessJob($('#jobBtn')) },
     { label: 'Sync browser bookmarks', icon: 'i-refresh', run: () => syncBookmarks($('#syncBtn')) }
   ];
 }
@@ -4149,11 +4529,27 @@ function setupCursor() {
   });
 }
 
+function mergeBuiltinSections(saved) {
+  const merged = [...saved];
+  const have = new Set(merged.map((s) => s.id));
+  DEFAULT_SECTIONS.forEach((def, idx) => {
+    if (have.has(def.id)) return;
+    let at = 0;
+    for (let i = idx - 1; i >= 0; i -= 1) {
+      const pos = merged.findIndex((s) => s.id === DEFAULT_SECTIONS[i].id);
+      if (pos >= 0) { at = pos + 1; break; }
+    }
+    merged.splice(at, 0, { ...def });
+    have.add(def.id);
+  });
+  return merged;
+}
+
 async function loadSections() {
   try {
     const data = await getJSON('/api/sections');
     if (Array.isArray(data.sections) && data.sections.length) {
-      state.sections = data.sections;
+      state.sections = mergeBuiltinSections(data.sections);
       renderSections();
       return true;
     }
@@ -4164,7 +4560,7 @@ async function loadSections() {
 
 function fillSectionForm(section) {
   const id = section ? section.id : '';
-  const color = section ? section.color : '#c6ff4a';
+  const color = section ? section.color : '#667c2e';
   state.editingSectionId = id || null;
   if ($('#sectionId')) $('#sectionId').value = id;
   if ($('#sectionFormMode')) $('#sectionFormMode').textContent = section ? 'EDIT SECTION' : 'NEW SECTION';
@@ -4221,11 +4617,11 @@ async function saveSectionForm(event) {
     if ($('#sectionLabel')) $('#sectionLabel').focus();
     return;
   }
-  const color = $('#sectionColorText') ? $('#sectionColorText').value.trim() : '#c6ff4a';
+  const color = $('#sectionColorText') ? $('#sectionColorText').value.trim() : '#667c2e';
   const payload = {
     label,
     icon: $('#sectionIcon') ? $('#sectionIcon').value : 'i-spark',
-    color: /^#[0-9a-f]{6}$/i.test(color) ? color : '#c6ff4a',
+    color: /^#[0-9a-f]{6}$/i.test(color) ? color : '#667c2e',
     logo: $('#sectionLogo') ? $('#sectionLogo').value.trim() : '',
     tags: $('#sectionTags') ? $('#sectionTags').value : '',
     description: $('#sectionDesc') ? $('#sectionDesc').value.trim() : '',
@@ -4327,7 +4723,7 @@ function openCardDialog(sectionId, cardId) {
   if ($('#cardStatus')) $('#cardStatus').value = card ? card.status || '' : '';
   if ($('#cardDesc')) $('#cardDesc').value = card ? card.description || '' : '';
   if ($('#cardTags')) $('#cardTags').value = card ? (card.tags || []).join(', ') : '';
-  setCardColor(card ? card.color || section.color : section.color || '#c6ff4a');
+  setCardColor(card ? card.color || section.color : section.color || '#667c2e');
   if ($('#cardDeleteBtn')) $('#cardDeleteBtn').hidden = !card;
   const error = $('#cardError');
   if (error) error.hidden = true;
@@ -4667,6 +5063,8 @@ function bindEvents() {
   });
   const paletteBtn = $('#paletteBtn');
   if (paletteBtn) paletteBtn.addEventListener('click', openPalette);
+  const personaBtn = $('#personaBtn');
+  if (personaBtn) personaBtn.addEventListener('click', () => togglePersona(personaBtn));
   const paletteInput = $('#paletteInput');
   if (paletteInput) {
     paletteInput.addEventListener('input', () => { state.paletteIndex = 0; renderPalette(paletteInput.value); });

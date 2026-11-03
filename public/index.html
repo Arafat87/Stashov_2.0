@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#05070b" />
-<meta name="description" content="Stashov — a private, context-aware personal AI memory vault and impulse gate running on Nebius Token Factory and NVIDIA Nemotron." />
-<title>STASHOV — Neural Vault Command Deck</title>
-<link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+<meta name="theme-color" content="#e7dcc3" />
+<meta name="description" content="Stashov — a private memory ledger and impulse gate powered by Meta Muse Wonder. Treasury, Shelf, decision journal and a 3D Memory Palace." />
+<title>STASHOV — Memory Ledger</title>
+<link rel="preload" href="/fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="/fonts/instrument-serif-italic-latin.woff2" as="font" type="font/woff2" crossorigin />
-<link rel="preload" href="/fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/instrument-serif-latin.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="icon" href="/icon.svg" type="image/svg+xml" />
 <link rel="manifest" href="/manifest.webmanifest" />
 <link rel="stylesheet" href="/styles.css" />
@@ -59,13 +59,14 @@
 <button class="rail-btn" id="tab-deck" data-tab="deck" role="tab" aria-selected="true" aria-controls="panel-deck"><svg class="icon"><use href="#i-deck"/></svg><span>Deck</span></button>
 <button class="rail-btn" id="tab-vault" data-tab="vault" role="tab" aria-selected="false" aria-controls="panel-vault"><svg class="icon"><use href="#i-vault"/></svg><span>Vault</span></button>
 <button class="rail-btn" id="tab-library" data-tab="library" role="tab" aria-selected="false" aria-controls="panel-library"><svg class="icon"><use href="#i-book"/></svg><span>Library</span></button>
+<button class="rail-btn" id="tab-references" data-tab="references" role="tab" aria-selected="false" aria-controls="panel-references"><svg class="icon"><use href="#i-book"/></svg><span>Refs</span></button>
 <button class="rail-btn" id="tab-wishlist" data-tab="wishlist" role="tab" aria-selected="false" aria-controls="panel-wishlist"><svg class="icon"><use href="#i-gate"/></svg><span>Gate</span></button>
 <button class="rail-btn" id="tab-protocols" data-tab="protocols" role="tab" aria-selected="false" aria-controls="panel-protocols"><svg class="icon"><use href="#i-pulse"/></svg><span>Rules</span></button>
 <button class="rail-btn" id="tab-context" data-tab="context" role="tab" aria-selected="false" aria-controls="panel-context"><svg class="icon"><use href="#i-fingerprint"/></svg><span>You</span></button>
 <button class="rail-btn" id="tab-ingest" data-tab="ingest" role="tab" aria-selected="false" aria-controls="panel-ingest"><svg class="icon"><use href="#i-spark"/></svg><span>Capture</span></button>
 <button class="rail-btn" id="tab-router" data-tab="router" role="tab" aria-selected="false" aria-controls="panel-router"><svg class="icon"><use href="#i-router"/></svg><span>Router</span></button>
 </nav>
-<div class="rail-foot"><i class="signal-dot"></i><span>SYS<br>ONLINE</span></div>
+<div class="rail-foot"><i class="signal-dot"></i><span>LEDGER<br>OPEN</span></div>
 </aside>
 <div class="shell">
 <header class="topbar">
@@ -76,6 +77,8 @@
 <div class="topbar-right">
 <div class="budget-mini"><span>FUN-MONEY</span><strong id="topBudget">$—</strong></div>
         <span class="clock" id="clock">--:--:--</span>
+        <a class="palette-btn" href="/palace.html" aria-label="Open the 3D Memory Palace"><svg class="icon"><use href="#i-vault"/></svg><span>Palace</span></a>
+        <button class="palette-btn" id="personaBtn" aria-label="Load the Jordan demo persona"><svg class="icon"><use href="#i-spark"/></svg><span>Demo as Jordan</span></button>
         <button class="palette-btn" id="customizeBtn" aria-label="Customize sidebar sections" aria-haspopup="dialog" aria-controls="sectionsDialog"><svg class="icon"><use href="#i-edit"/></svg><span>Customize</span></button>
         <button class="palette-btn" id="helpBtn" aria-label="Open help and glossary" aria-haspopup="dialog" aria-controls="helpDialog"><svg class="icon"><use href="#i-book"/></svg><span>Help</span><kbd>?</kbd></button>
         <button class="palette-btn" id="paletteBtn" aria-label="Open command palette" aria-haspopup="dialog" aria-controls="paletteDialog"><svg class="icon"><use href="#i-command"/></svg><span>Command</span><kbd id="paletteKbd">Ctrl K</kbd></button>
@@ -85,8 +88,8 @@
 <section class="panel is-active" id="panel-deck" role="tabpanel" aria-labelledby="tab-deck" tabindex="0">
   <div class="hero">
     <div class="hero-copy">
-      <p class="eyebrow">PRIVATE MEMORY INTELLIGENCE / NYC</p>
-      <h1 class="hero-title"><span class="glitch" data-text="STASHOV">STASHOV</span><span class="hero-script">neural vault</span></h1>
+      <p class="eyebrow">PRIVATE MEMORY LEDGER / FILED BY WONDER</p>
+      <h1 class="hero-title"><span class="glitch" data-text="STASHOV">STASHOV</span><span class="hero-script">memory ledger</span></h1>
       <p class="hero-lede">Your bookmarks, wishlist, routines and hard limits, fused into one private brain. It remembers what you already own, what conflicts with your stack, and what you were about to buy on impulse.</p>
       <div class="hero-actions">
         <button class="btn" data-goto="vault">Enter the vault <svg class="icon"><use href="#i-arrow"/></svg></button>
@@ -105,11 +108,11 @@
         <div class="core-ring r2"></div>
         <div class="core-ring r3"></div>
         <div class="core-sphere"><span>S</span><i class="core-scan"></i></div>
-        <span class="core-tag tag-1">Nemotron 3 Ultra</span>
-        <span class="core-tag tag-2">1M context</span>
-        <span class="core-tag tag-3">Qwen embeddings</span>
+        <span class="core-tag tag-1">Muse Wonder 1.0</span>
+        <span class="core-tag tag-2">Decision journal</span>
+        <span class="core-tag tag-3">Shelf of Proof</span>
         <span class="core-tag tag-4">Impulse gate</span>
-        <div class="core-readout"><span>MEMORY CORE</span><b>ONLINE</b><span class="core-bars"><i></i><i></i><i></i><i></i></span></div>
+        <div class="core-readout"><span>LEDGER</span><b>OPEN</b><span class="core-bars"><i></i><i></i><i></i><i></i></span></div>
       </div>
     </div>
   </div>
@@ -277,6 +280,45 @@
   <div class="load-more-wrap"><button class="btn ghost" id="libraryMoreBtn" hidden>Load more sites <svg class="icon"><use href="#i-arrow"/></svg></button></div>
 </section>
 
+<section class="panel" id="panel-references" role="tabpanel" aria-labelledby="tab-references" tabindex="0" hidden>
+  <div class="section-head reveal">
+    <div>
+      <p class="eyebrow">02B / NOTES</p>
+      <h2>Notes &amp; spots.<br><em>Kept.</em></h2>
+      <p class="lede">Scans become notes here — video transcripts, page text, your own words. Filter by category, edit anything, delete what stops earning its place. Products spotted in videos wait in the Gate; routines land in Rules.</p>
+    </div>
+    <div class="head-actions"><span class="status-chip"><i></i><span id="notesCount">-</span> notes</span></div>
+  </div>
+  <div class="note-cats reveal" id="noteCats" role="group" aria-label="Note categories"></div>
+  <div class="toolbar reveal">
+    <input type="text" id="notesSearch" autocomplete="off" placeholder="Search notes — 'cleanse', 'tiktok', 'gift'." aria-label="Search notes" />
+    <button class="btn" id="noteNewBtn" type="button">New note</button>
+    <button class="btn ghost" id="notesRefreshBtn" type="button">Refresh</button>
+  </div>
+  <form id="noteForm" class="note-form glass" hidden>
+    <div class="form-row">
+      <div class="field"><label for="noteTitle">Title</label><input type="text" id="noteTitle" autocomplete="off" placeholder="What is this note?" /></div>
+      <div class="field"><label for="noteCatSelect">Category</label><select id="noteCatSelect"></select></div>
+    </div>
+    <div class="field"><label for="noteBody">Note</label><textarea id="noteBody" rows="4" placeholder="The detail worth keeping…"></textarea></div>
+    <div class="field"><label for="noteTags">Tags (comma separated)</label><input type="text" id="noteTags" autocomplete="off" placeholder="skincare, pm, gift" /></div>
+    <p class="form-error" id="noteFormError" role="alert" hidden></p>
+    <div class="import-row">
+      <button class="btn" id="noteSaveBtn" type="submit">Save note</button>
+      <button class="btn ghost" id="noteCancelBtn" type="button">Cancel</button>
+    </div>
+  </form>
+  <div id="notesGrid" class="library-grid"></div>
+  <p class="empty-note" id="notesEmpty" hidden>No notes here yet. Capture a video, page or note — or write one with New note.</p>
+  <h3 class="refs-subhead">Captured links</h3>
+  <div class="toolbar reveal">
+    <input type="text" id="refsSearch" autocomplete="off" placeholder="Search captured links." aria-label="Search captured links" />
+    <button class="btn ghost" id="refsRefreshBtn" type="button">Refresh</button>
+  </div>
+  <div id="refsGrid" class="library-grid"></div>
+  <p class="empty-note" id="refsEmpty" hidden>Nothing captured yet. Capture a link, note, screenshot or video in Capture Studio and it lands here.</p>
+</section>
+
 <section class="panel" id="panel-wishlist" role="tabpanel" aria-labelledby="tab-wishlist" tabindex="0" hidden>
   <div class="section-head reveal">
     <div>
@@ -406,6 +448,8 @@
           <label for="mode-url"><svg class="icon"><use href="#i-external"/></svg><span>Web / social link</span></label>
           <input type="radio" name="ingestMode" id="mode-screenshot" value="screenshot" />
           <label for="mode-screenshot"><svg class="icon"><use href="#i-search"/></svg><span>Screenshot OCR</span></label>
+          <input type="radio" name="ingestMode" id="mode-video" value="video" />
+          <label for="mode-video"><svg class="icon"><use href="#i-search"/></svg><span>Video link</span></label>
           <input type="radio" name="ingestMode" id="mode-note" value="note" />
           <label for="mode-note"><svg class="icon"><use href="#i-pulse"/></svg><span>Life-hack note</span></label>
         </div>
@@ -422,10 +466,10 @@
     <aside class="pipeline glass reveal">
       <header class="panel-head"><span class="micro">ROUTING PIPELINE</span><span class="live-label"><i></i>READY</span></header>
       <div class="pipe">
-        <div class="pipe-step"><span class="pipe-num">01</span><div><h4>Classify</h4><p>Fast structured extraction across fourteen clusters with <code>Nemotron 3 Nano</code>.</p></div></div>
+        <div class="pipe-step"><span class="pipe-num">01</span><div><h4>Classify</h4><p>Fast structured extraction across fourteen clusters with <code>Muse Spark 1.3</code>.</p></div></div>
         <div class="pipe-step"><span class="pipe-num">02</span><div><h4>Gate</h4><p>Closet overlap, routine conflicts, and budget impact checked before storage.</p></div></div>
         <div class="pipe-step"><span class="pipe-num">03</span><div><h4>Embed</h4><p>Local semantic vector links the new signal to everything you already saved.</p></div></div>
-        <div class="pipe-step"><span class="pipe-num">04</span><div><h4>Route</h4><p>Deep calls escalate to <code>Nemotron 3 Ultra</code> with a 1M-token context window.</p></div></div>
+        <div class="pipe-step"><span class="pipe-num">04</span><div><h4>Route</h4><p>Deep calls escalate to <code>Muse Wonder 1.0</code>, citing your own decision journal.</p></div></div>
       </div>
       <div class="examples">
         <span class="micro">TRY ONE</span>
@@ -439,15 +483,25 @@
     </aside>
   </div>
   <div id="ingestResult" class="result-panel glass" hidden></div>
+
+  <div class="capture-import glass reveal">
+    <header class="panel-head"><span class="micro">TIKTOK IMPORT</span><span class="badge-soft">BULK</span></header>
+    <p>Saved a hundred videos for later? In TikTok: Settings → Download your data, then drop the file here. Every favourite is filed on the Refs board with dedupe — nothing is imported twice.</p>
+    <div class="import-row">
+      <input type="file" id="tiktokFile" accept=".json,.txt" aria-label="TikTok data file" />
+      <button class="btn ghost" id="tiktokImportBtn" type="button">Import favourites</button>
+    </div>
+    <p class="micro" id="tiktokImportResult" role="status"></p>
+  </div>
 </section>
 <section class="panel" id="panel-router" role="tabpanel" aria-labelledby="tab-router" tabindex="0" hidden>
   <div class="section-head reveal">
     <div>
-      <p class="eyebrow">06 / TOKEN FACTORY ROUTER</p>
-      <h2>Six models.<br><em>One decision.</em></h2>
-      <p class="lede">Every task is routed to the cheapest model that can still do it well — Nano for extraction, Super for structuring, Ultra for the arguments that actually change your mind.</p>
+      <p class="eyebrow">06 / META MODEL ROUTER</p>
+      <h2>Wonder thinks.<br><em>Spark files.</em></h2>
+      <p class="lede">Every task is routed to the cheapest model that can still do it well — Spark for extraction and shelf scans, Wonder for the verdicts that actually change your mind, Baseten as rescue, Modal for the overnight price loop.</p>
     </div>
-    <div class="head-actions"><button class="btn" id="jobBtn"><svg class="icon"><use href="#i-refresh"/></svg> Run serverless job</button></div>
+    <div class="head-actions"><button class="btn" id="jobBtn"><svg class="icon"><use href="#i-refresh"/></svg> Run price loop</button></div>
   </div>
 
   <div class="router-stats reveal">
@@ -464,7 +518,7 @@
     </article>
 
     <article class="audit-card glass reveal">
-      <header class="panel-head"><span class="micro">1M-CONTEXT ORACLE</span><span class="badge-soft">NEMOTRON ULTRA</span></header>
+      <header class="panel-head"><span class="micro">VAULT ORACLE</span><span class="badge-soft">MUSE WONDER</span></header>
       <h3>Ask across your entire vault.</h3>
       <div class="suggestions" id="auditSuggestions">
         <button type="button" data-prompt="Audit my bookmarks, wishlist, owned wardrobe and skincare stack. What should I buy, skip, or consolidate?">Full vault audit</button>
@@ -476,7 +530,7 @@
         <button class="btn" id="runAuditBtn"><svg class="icon"><use href="#i-arrow"/></svg> Synthesize</button>
       </div>
       <div class="console-shell">
-        <div class="console-bar"><span><i></i><i></i><i></i></span><span>ultra / 1m-context</span><span id="auditStatus">IDLE</span></div>
+        <div class="console-bar"><span><i></i><i></i><i></i></span><span>wonder / memory audit</span><span id="auditStatus">IDLE</span></div>
         <pre class="console" id="auditOutput">The oracle is idle. Run a synthesis to audit 1,346 bookmarks, your wardrobe, budget and routines in a single pass.</pre>
       </div>
     </article>
@@ -488,7 +542,7 @@
       <div class="digest-stats" id="routerDigestStats"></div>
       <ul class="deal-list" id="routerDigestDeals"></ul>
       <div class="console-shell job-shell">
-        <div class="console-bar"><span><i></i><i></i><i></i></span><span>nebius / serverless job</span><span id="jobStatus">SCHEDULED</span></div>
+        <div class="console-bar"><span><i></i><i></i><i></i></span><span>modal / price loop</span><span id="jobStatus">SCHEDULED</span></div>
         <pre class="console" id="jobOutput" hidden></pre>
       </div>
     </article>
@@ -507,14 +561,14 @@
       <div>
         <p class="eyebrow" id="oracleKicker">IMPULSE GATE / DEEP AUDIT</p>
         <h2 id="oracleTitle">Oracle readout</h2>
-        <p class="oracle-meta" id="oracleMeta">Routing through Nebius Token Factory…</p>
+        <p class="oracle-meta" id="oracleMeta">Routing through Meta Muse Wonder…</p>
       </div>
       <button class="icon-btn" id="oracleClose" aria-label="Close oracle"><svg class="icon"><use href="#i-x"/></svg></button>
     </header>
     <div class="oracle-body">
       <div class="console-shell">
-        <div class="console-bar"><span><i></i><i></i><i></i></span><span>nemotron / deep-reasoning</span><span id="oracleStatus">ROUTING</span></div>
-        <pre class="console oracle-console" id="oracleOutput">Establishing a deep-reasoning session with NVIDIA Nemotron 3 Ultra…</pre>
+        <div class="console-bar"><span><i></i><i></i><i></i></span><span>wonder / deep audit</span><span id="oracleStatus">ROUTING</span></div>
+        <pre class="console oracle-console" id="oracleOutput">Establishing a deep-reasoning session with Muse Wonder…</pre>
       </div>
     </div>
     <footer class="oracle-foot">
@@ -1061,7 +1115,7 @@
 
 <div class="toast-host" id="toastHost" role="status" aria-live="polite"></div>
 
-<footer class="site-foot"><span>STASHOV / PERSONAL AI MEMORY OS</span><span>V2.0 — NEBius X NVIDIA</span><span>PRIVATE BY DESIGN</span></footer>
+<footer class="site-foot"><span>STASHOV / MEMORY LEDGER</span><span>META AI HACKATHON — MUSE WONDER</span><span>PRIVATE BY DESIGN</span></footer>
 </div>
 <script src="/app.js" defer></script>
 </body>

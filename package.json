@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "sync-bookmarks": "node scripts/sync-bookmarks.js",
+    "seed-persona": "node scripts/seed-persona.js",
     "audit-library": "node scripts/audit-library.js",
     "generate-cluster-cards": "node scripts/generate-cluster-cards.js",
     "build-glossary": "node scripts/build-glossary.js",

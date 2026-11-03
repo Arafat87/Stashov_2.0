@@ -1,5 +1,5 @@
 {
-  "name": "Stashov — Neural Vault",
+  "name": "Stashov — Memory Ledger",
   "short_name": "Stashov",
   "description": "Private bookmark vault, reference library, routine playbooks and a 14-day impulse gate.",
   "id": "/",
@@ -7,8 +7,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#05070b",
-  "theme_color": "#05070b",
+  "background_color": "#e7dcc3",
+  "theme_color": "#e7dcc3",
   "categories": ["productivity", "shopping", "lifestyle"],
   "icons": [
     {
