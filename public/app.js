@@ -324,10 +324,11 @@ function renderMode(v) {
   if (!pill) return;
   const live = Boolean(v && (v.meta_configured || v.nebius_configured || v.baseten_configured));
   pill.className = 'mode-pill' + (live ? '' : ' is-demo');
-  pill.innerHTML = `<i></i> ${live ? 'META LIVE' : 'DEMO FALLBACK'}`;
+  const liveLabel = !live ? 'DEMO FALLBACK' : (v.provider === 'nebius' ? 'NEBIUS LIVE' : (v.baseten_configured && !v.meta_configured && !v.nebius_configured ? 'BASETEN LIVE' : 'META LIVE'));
+  pill.innerHTML = `<i></i> ${liveLabel}`;
   pill.title = live
-    ? 'Requests are routed to Meta Muse models with a live API key.'
-    : 'No live MODEL_API_KEY detected. Deterministic fallback traces are used.';
+    ? 'Requests cascade Meta Muse → Nebius Nemotron → Baseten rescue with a live API key.'
+    : 'No live MODEL_API_KEY or NEBIUS_API_KEY detected. Deterministic fallback traces are used.';
 }
 function renderPersonaBtn(v) {
   const btn = $('#personaBtn');
@@ -3902,7 +3903,7 @@ async function runImpulseAudit(id) {
       const raw = data.analysis || JSON.stringify(data, null, 2);
       out.innerHTML = esc(raw).replace(/([^.\n]*(?:decision journal|you (?:decided|skipped|bought|snoozed)|your (?:past|previous) (?:decision|skip|purchase))[^.\n]*\.?)/gi, '<mark class="journal-hit">$1</mark>');
     }
-    if (meta) meta.textContent = `${data.model || 'Muse Wonder 1.0'} · ${(data.live_meta || data.live_nebius || data.live_baseten) ? 'LIVE META API' : 'DETERMINISTIC FALLBACK'} · ${data.telemetry ? data.telemetry.latency_ms : '—'} ms`;
+    if (meta) meta.textContent = `${data.model || 'Muse Wonder 1.0'} · ${(data.live_meta || data.live_nebius || data.live_baseten) ? `LIVE ${String(data.provider || 'meta').toUpperCase()} API` : 'DETERMINISTIC FALLBACK'} · ${data.telemetry ? data.telemetry.latency_ms : '—'} ms`;
     if (status) status.textContent = (data.live_meta || data.live_nebius || data.live_baseten) ? 'LIVE' : 'FALLBACK';
     refreshVault();
   } catch (err) {

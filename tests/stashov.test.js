@@ -14,7 +14,7 @@ for (const name of ['vault.json', 'sections.json', 'clusters.json']) {
 }
 
 const { classifyBookmark, deterministicVec } = require('../scripts/sync-bookmarks');
-const { runServerlessJob } = require('../jobs/nebius-serverless-worker');
+const { runServerlessJob } = require('../jobs/digest-worker');
 const { librarySectionFor, librarySectionsWithCounts } = require('../lib/library');
 const { parseRoutine } = require('../lib/routine');
 const { createProtocol, updateProtocol, deleteProtocol } = require('../lib/protocols');
@@ -62,9 +62,9 @@ test('Deterministic semantic vector produces normalized 64-dim embeddings', () =
   assert.ok(Math.abs(norm - 1.0) < 0.05);
 });
 
-test('Nebius Serverless Worker job executes and updates digest telemetry', async () => {
+test('Digest maintenance worker job executes and updates digest telemetry', async () => {
   const report = await runServerlessJob();
-  assert.ok(report.job_id.startsWith('nebius_job_'));
+  assert.ok(report.job_id.startsWith('digest_job_'));
   assert.ok(report.stats.total_bookmarks_verified >= 1300);
   assert.ok(report.top_deal_alerts.length > 0);
 });

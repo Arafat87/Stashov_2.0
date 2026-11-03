@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { syncBrowserBookmarks, classifyBookmark, deterministicVec } = require('./scripts/sync-bookmarks');
-const { runServerlessJob } = require('./jobs/nebius-serverless-worker');
+const { runServerlessJob } = require('./jobs/digest-worker');
 const { resolveImage, isCachedImage, safeRemoteUrl, IMAGE_DIR, BUNDLED_IMAGE_DIR, ensureImageDir } = require('./lib/image-cache');
 const { loadSections, saveSections, createSection, updateSection, deleteSection, reorderSections } = require('./lib/sections');
 const { getClusterMetaMap, replaceStore, updateClusterMeta } = require('./lib/clusters');
@@ -96,48 +96,36 @@ ensureImageDir();
 
 const meta = require('./lib/meta');
 const baseten = require('./lib/baseten');
+const provider = require('./lib/provider');
 
-const NEBIUS_BASE_URL = (process.env.NEBIUS_BASE_URL || 'https://api.tokenfactory.nebius.com/v1').replace(/\/$/, '');
-const NEBIUS_API_KEY = process.env.NEBIUS_API_KEY || '';
-
-const LEGACY_MODELS = {
-  ultra: 'nvidia/Nemotron-3-Ultra-550b-a55b',
-  super: 'nvidia/Nemotron-3-Super-120b-a12b',
-  nano: 'nvidia/Nemotron-3-Nano-30B-A3B',
-  lightning: 'nvidia/Nemotron-3.5-Lightning',
-  vision: 'zai-org/GLM-5.3-Flash',
-  embedding: 'Qwen/Qwen3-Embedding-8B',
-};
-
-function nebiusConfigured() {
-  return Boolean(NEBIUS_API_KEY && NEBIUS_API_KEY !== 'your_nebius_token_factory_api_key_here');
-}
-
-// Meta Model API is the primary provider; the Nebius Token Factory path
-// stays as an automatic fallback when no Meta key is configured.
-const PROVIDER = meta.isMetaConfigured() ? 'meta' : (nebiusConfigured() ? 'nebius' : 'offline');
+// Dual providers: Meta Muse is primary, Nebius Token Factory is the
+// automatic fallback (per request when a Meta call fails, primary when no
+// Meta key is set), Baseten rescues only when both fail, else offline.
+const PROVIDER = provider.resolveProvider();
 
 function providerClause() {
-  if (PROVIDER === 'meta') return 'Meta Muse via the Meta Model API';
-  if (PROVIDER === 'nebius') return 'NVIDIA Nemotron via Nebius Token Factory';
-  return 'the local deterministic fallback';
+  return provider.providerClause(PROVIDER);
 }
 
 function reasonTier() {
-  if (PROVIDER === 'meta') return 'Frontier Reasoning (Muse Wonder)';
-  if (PROVIDER === 'nebius') return '1M-Context Deep Reasoning';
-  return 'Local Fallback';
+  return provider.reasonTier(PROVIDER);
+}
+
+// Telemetry tier follows the provider that actually served the call.
+function tierFor(result) {
+  if (result && result.via) return provider.reasonTier(result.via);
+  return reasonTier();
 }
 
 const MODELS = (() => {
   if (PROVIDER === 'nebius') {
     return {
-      ultra: process.env.MODEL_ULTRA || LEGACY_MODELS.ultra,
-      super: process.env.MODEL_SUPER || LEGACY_MODELS.super,
-      nano: process.env.MODEL_NANO || LEGACY_MODELS.nano,
-      lightning: process.env.MODEL_LIGHTNING || LEGACY_MODELS.lightning,
-      vision: process.env.MODEL_VISION || LEGACY_MODELS.vision,
-      embedding: process.env.MODEL_EMBEDDING || LEGACY_MODELS.embedding,
+      ultra: process.env.MODEL_ULTRA || provider.NEBIUS_MODEL_DEFAULTS.ultra,
+      super: process.env.MODEL_SUPER || provider.NEBIUS_MODEL_DEFAULTS.super,
+      nano: process.env.MODEL_NANO || provider.NEBIUS_MODEL_DEFAULTS.nano,
+      lightning: process.env.MODEL_LIGHTNING || provider.NEBIUS_MODEL_DEFAULTS.lightning,
+      vision: process.env.MODEL_VISION || provider.NEBIUS_MODEL_DEFAULTS.vision,
+      embedding: process.env.MODEL_EMBEDDING || provider.NEBIUS_MODEL_DEFAULTS.embedding,
     };
   }
   const muse = meta.metaModels();
@@ -149,7 +137,7 @@ const MODELS = (() => {
     vision: process.env.MODEL_VISION || muse.agent,
     image: process.env.MODEL_IMAGE || muse.image,
     segment: process.env.MODEL_SAM || muse.segment,
-    embedding: process.env.MODEL_EMBEDDING || LEGACY_MODELS.embedding,
+    embedding: process.env.MODEL_EMBEDDING || provider.NEBIUS_MODEL_DEFAULTS.embedding,
   };
 })();
 
@@ -267,52 +255,10 @@ function cosineSim(a, b) {
   return dot / ((Math.sqrt(na) * Math.sqrt(nb)) || 1);
 }
 
-async function callNebiusChat(model, messages, maxTokens = 900) {
-  const start = Date.now();
-  if (!nebiusConfigured()) {
-    return { live: false, latency_ms: Date.now() - start + 380, content: null };
-  }
-  try {
-    const resp = await fetch(`${NEBIUS_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${NEBIUS_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        max_tokens: maxTokens,
-        temperature: 0.2,
-      }),
-      // A 1M-context audit can run long; never let a hung socket hold the request.
-      signal: AbortSignal.timeout(60_000),
-    });
-    if (!resp.ok) {
-      return { live: false, latency_ms: Date.now() - start, content: null };
-    }
-    const data = await resp.json();
-    const content = data?.choices?.[0]?.message?.content || null;
-    return {
-      live: true,
-      latency_ms: Date.now() - start,
-      content,
-      usage: data.usage || null,
-    };
-  } catch (_) {
-    return { live: false, latency_ms: Date.now() - start, content: null };
-  }
-}
-
-// Provider dispatcher: Meta Model API first, Nebius fallback, Baseten rescue,
-// else offline. The rescue fires only when the primary fails.
+// Provider dispatcher: Meta -> Nebius -> Baseten rescue -> offline.
+// Every result carries `via` + `model` so telemetry labels the server.
 async function callChat(model, messages, maxTokens = 900) {
-  const primary = PROVIDER === 'meta'
-    ? await meta.callMetaChat(model, messages, maxTokens)
-    : PROVIDER === 'nebius'
-      ? await callNebiusChat(model, messages, maxTokens)
-      : { live: false, latency_ms: 380, content: null };
-  return baseten.rescueWithBaseten(primary, messages, maxTokens);
+  return provider.callChatChain(MODELS, model, messages, maxTokens);
 }
 
 function httpError(status, message) {
@@ -675,7 +621,7 @@ async function handleRequest(req, res) {
         meta: vault.meta,
         provider: PROVIDER,
         meta_configured: meta.isMetaConfigured(),
-        nebius_configured: nebiusConfigured(),
+        nebius_configured: provider.isNebiusConfigured(),
         baseten_configured: baseten.isBasetenConfigured(),
         models: MODELS,
         personal_context: vault.personal_context,
@@ -1712,7 +1658,7 @@ async function handleRequest(req, res) {
         vault,
         `Impulse-Gate Deep Audit: "${item.title.slice(0, 48)}"`,
         llmRes.model || MODELS.ultra,
-        llmRes.via === 'baseten' ? 'Hackathon Fallback (Baseten Spark)' : reasonTier(),
+        llmRes.via === 'baseten' ? 'Hackathon Fallback (Baseten Spark)' : tierFor(llmRes),
         usage.latency,
         usage.tokensIn,
         usage.tokensOut,
@@ -1724,9 +1670,9 @@ async function handleRequest(req, res) {
       return sendJson(res, 200, {
         ok: true,
         model: llmRes.model || MODELS.ultra,
-        provider: PROVIDER,
-        live_meta: PROVIDER === 'meta' && llmRes.live,
-        live_nebius: PROVIDER === 'nebius' && llmRes.live,
+        provider: llmRes.via || PROVIDER,
+        live_meta: llmRes.via === 'meta' && llmRes.live,
+        live_nebius: llmRes.via === 'nebius' && llmRes.live,
         live_baseten: llmRes.via === 'baseten' && llmRes.live,
         analysis,
         telemetry: tel,
@@ -1944,7 +1890,7 @@ async function handleRequest(req, res) {
         vault,
         `Vault Audit & Query: "${question.slice(0, 48)}"`,
         llmRes.model || MODELS.ultra,
-        llmRes.via === 'baseten' ? 'Hackathon Fallback (Baseten Spark)' : reasonTier(),
+        llmRes.via === 'baseten' ? 'Hackathon Fallback (Baseten Spark)' : tierFor(llmRes),
         usage.latency,
         usage.tokensIn,
         usage.tokensOut,
@@ -1956,16 +1902,16 @@ async function handleRequest(req, res) {
       return sendJson(res, 200, {
         ok: true,
         model: llmRes.model || MODELS.ultra,
-        provider: PROVIDER,
-        live_meta: PROVIDER === 'meta' && llmRes.live,
-        live_nebius: PROVIDER === 'nebius' && llmRes.live,
+        provider: llmRes.via || PROVIDER,
+        live_meta: llmRes.via === 'meta' && llmRes.live,
+        live_nebius: llmRes.via === 'nebius' && llmRes.live,
         live_baseten: llmRes.via === 'baseten' && llmRes.live,
         report,
         telemetry: tel,
       });
     }
 
-    // 9. POST /api/serverless-job — Trigger the Nebius Serverless Job Worker on demand
+    // 9. POST /api/serverless-job — Trigger the digest maintenance worker on demand
     if (req.method === 'POST' && pathname === '/api/serverless-job') {
       if (!rateLimit(req, 'serverless-job', 2, 60 * 1000)) {
         return sendJson(res, 429, { error: 'Give the background job a moment before running it again.' }, { 'Retry-After': '60' });

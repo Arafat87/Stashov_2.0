@@ -1,10 +1,10 @@
 /**
- * Nebius Serverless Job Worker — Stashov Background Autonomous Engine
- * Runs scheduled tasks:
- *  1. Deal & Resale Price Floor Poller (via Nebius Token Factory Nemotron Nano function calling)
+ * Digest Maintenance Worker — Stashov Background Autonomous Engine
+ * Runs scheduled tasks deterministically (no model calls):
+ *  1. Deal & Resale Price Floor Poller (compares stored floors to retail)
  *  2. Anti-Link-Rot Snapshot Verifier (flags dead social/retail bookmarks)
  *  3. Cooling-Off Timer Unlocker (notifies when 14-day impulse locks expire)
- *  4. Weekly Personal AI Digest Generator (via Nemotron 3 Ultra 1M-Context)
+ *  4. Weekly Personal AI Digest Generator (vault stats + gate readiness)
  */
 
 const { ready, readVault, writeVault } = require('../lib/state');
@@ -12,7 +12,7 @@ const { ensureGateState, gateSummary } = require('../lib/gate');
 
 async function runServerlessJob() {
   const start = Date.now();
-  console.log('[Nebius Serverless Job] Starting Stashov Autonomous Vault Maintenance...');
+  console.log('[Digest Worker] Starting Stashov Autonomous Vault Maintenance...');
 
   await ready();
   const vault = readVault();
@@ -55,13 +55,13 @@ async function runServerlessJob() {
   );
 
   const digestReport = {
-    job_id: `nebius_job_${Date.now()}`,
+    job_id: `digest_job_${Date.now()}`,
     executed_at: new Date().toISOString(),
     duration_ms: Date.now() - start + 340,
     models_invoked: [
-      'nvidia/Nemotron-3-Nano-30B-A3B (Deal Schema Extraction)',
+      'Deterministic rules (Deal Schema Extraction)',
       'Qwen/Qwen3-Embedding-8B (Cross-Link Index)',
-      'nvidia/Nemotron-3-Ultra-550b-a55b (Weekly Digest & Routine Audit)',
+      'Deterministic rules (Weekly Digest & Routine Audit)',
     ],
     stats: {
       total_bookmarks_verified: bookmarks.length,
@@ -106,7 +106,7 @@ async function runServerlessJob() {
   vault.last_digest = digestReport;
   await writeVault(vault);
 
-  console.log('[Nebius Serverless Job] Completed successfully:', JSON.stringify(digestReport.stats));
+  console.log('[Digest Worker] Completed successfully:', JSON.stringify(digestReport.stats));
   return digestReport;
 }
 
