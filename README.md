@@ -12,7 +12,7 @@
 
 Regular bookmark folders and wishlist apps fail in two ways:
 1. **Retrieval & Link Rot:** Saved posts across TikTok, X, YouTube, Reddit, and Chrome/Brave bookmark bars rot or drown in unorganized folders and camera-roll screenshots.
-2. **Zero Personal Context:** A standard wishlist doesn't know you *already own* two charcoal hoodies and a winter parka, that a viral skincare cleanser contains acids that conflict with your evening `0.1% Adapalene` retinoid routine, or that you already bookmarked four fragrance wholesale discounters that carry the same cologne for $87 less.
+2. **Zero Personal Context:** A standard wishlist doesn't know you *already own* a charcoal hoodie and a winter parka, that a viral skincare cleanser contains acids that conflict with your evening `0.1% Adapalene` retinoid routine, or that you already bookmarked four discounters carrying that same $195 cologne for $87 less.
 
 Stashov unifies your **saved bookmarks**, **wishlist**, **living routines**, and **personal constraints** into one connected brain on open infrastructure you control.
 
@@ -28,7 +28,7 @@ Every task in Stashov is routed to the optimal Muse model on the **Meta Model AP
 | **Mid-Tier Agentic Synthesis** | `muse-spark-1.3` | Promoting bookmarks into structured wishlist cards, protocol checklist generation, and dupe comparison. |
 | **Fast Structured Extraction** | `muse-spark-1.1` | Sub-second URL/transcript classification, auto-tagging across 14 categories, and price schema extraction. |
 | **Vision Ingestion** | `muse-spark-1.3` (multimodal) | Camera-roll screenshot OCR and video-thumbnail product spotting (product names, prices, brands, routine steps). |
-| **Unified Semantic Memory** | `Qwen/Qwen3-Embedding-8B` | Embedding bookmarks, wishlist items, owned inventory, and protocols for semantic search and automatic cross-linking. |
+| **Unified Semantic Memory** | Local deterministic 64-dim vectors + lexical search (no model calls) | Embedding bookmarks, wishlist items, owned inventory, and protocols for semantic search and automatic cross-linking. |
 | **Autonomous Background Worker** | Deterministic digest job (`jobs/digest-worker.js`) | Scheduled deal/discounter polling, link-rot verification, cooling-off timer unlocks, and digest compilation. No model calls. |
 
 ---
@@ -37,10 +37,10 @@ Every task in Stashov is routed to the optimal Muse model on the **Meta Model AP
 
 1. **Automated Browser Bookmark Importer & 14-Category Organizer (`scripts/sync-bookmarks.js`):**
    - Automatically scans local **Google Chrome**, **Brave Browser**, and **Microsoft Edge** bookmark stores.
-   - Deduplicates **1,346 unique bookmarks** and classifies them into **14 structured categories** (Programming & Cloud, AI Models & Infra, Career & Interview Prep, Menswear & Streetwear, Fragrances & Cologne, Skincare/Health & Protocols, Watches/Footwear & Accessories, Soccer Kits, Global Sourcing Proxies, etc.).
-   - **Reference Library:** separates the **1,017 non-shopping links** into 10 reference shelves (Education, Programming, AI, Career, Business, Design, Cybersecurity, Utilities, Gaming, Sourcing), with a live check, a short description, and a "use for" note on every entry. Confirmed-dead links are removed; bot-blocked and timeout entries stay marked for review. A post-audit review restored 9 false positives and logged every decision in `data/library-removal-review.json`.
+   - Deduplicates **1,346 unique bookmarks** and classifies them into **14 structured categories** (Programming, Cloud & Dev Tools; AI Models, Agents & Infra; Career, Jobs & Interview Prep; Menswear & Streetwear; Fragrances & Cologne; Skincare, Health & Protocols; Watches, Footwear & Accessories; Soccer Kits & Sportswear; Global Sourcing & Proxies; etc.).
+   - **Reference Library:** separates the **1,017 non-shopping links** into 10 reference shelves (Education & Learning, Programming & Dev Tools, AI, Data & Automation, Career & Interview Prep, Business, Finance & Ideas, Design & Creative, Cybersecurity & OSINT, Utilities & Life Hacks, Gaming, Mods & Esports, Sourcing & Shipping), with a live check, a short description, and a "use for" note on every entry. Confirmed-dead links are removed; bot-blocked and timeout entries stay marked for review. A post-audit review restored 9 false positives and logged every decision in `data/library-removal-review.json`.
    - **Duplicate review and bulk shelf care:** a canonical-URL scan finds pages saved more than once (ignoring `utm_*`, `fbclid`, `www`, trailing slashes and parameter order) and lets you keep one copy while archiving the rest. Select mode adds archive, restore, and move-to-section actions; archived links stay recoverable from the **Archived** status filter.
-   - **Photo cards inside a cluster:** shopping clusters render their saved links as image cards. Each card reads the page's OpenGraph/JSON-LD photo through the SSRF-safe reader and caches it, so a saved product shows its picture beside its title, domain and cluster tag. The photo map lives in its own small store (`state/bookmark-photos.json`), never in the 2.4 MB vault. Reference clusters keep the compact text card, and a link with no usable photo shows a designed source tile instead of a broken image.
+   - **Photo cards inside a cluster:** shopping clusters render their saved links as image cards. Each card reads the page's OpenGraph/JSON-LD photo through the SSRF-safe reader and caches it, so a saved product shows its picture beside its title, domain and cluster tag. The photo map lives in its own small store (`data/bookmark-photos.json`), never in the 2.4 MB vault. Reference clusters keep the compact text card, and a link with no usable photo shows a designed source tile instead of a broken image.
    - **Generated cluster reference cards:** every one of the 14 clusters has a dedicated 800x600 SVG card in `public/cluster-cards/`, rendered on the cluster board for reference clusters and used as the fallback cover when a product cluster has no cached product image. Product clusters keep their live wishlist photos and thumbnails so the cover is always the actual item. Regenerate all cards with `npm run generate-cluster-cards`.
 2. **Smart Buyer & Impulse-Gate Engine:**
    - **"Already Own" Closet & Shelf Overlap Check:** Blocks duplicate impulse saves (e.g., flagging a saved parka when you already own a Black Quilted Winter Parka).
@@ -48,8 +48,8 @@ Every task in Stashov is routed to the optimal Muse model on the **Meta Model AP
    - **Paste-a-link quick add:** the Gate accepts a raw product URL, with a **Paste** button that reads the link from the clipboard, so a product found in a video, chat, or social feed can go from link to reviewed wishlist item without hunting through 1,346 bookmarks. The command palette also jumps straight to this field.
    - **One-click capture bookmarklet (`#captureDialog`):** open **Capture anywhere** in the Gate, drag **Add to Stashov** to the bookmarks bar, then click it on any product page. The bookmarklet reads the page’s JSON-LD/OpenGraph title, brand, price, currency, and image directly in the browser, then opens `/?capture=<page-url>` with that snapshot. When structured metadata is absent, it can read a visible price from the product area and explicitly marks it **low confidence** in the review, Gate card, and saved price note. That fallback prefers the current sale price over a struck compare-at price, follows the selected variant when variants show their own prices, and refuses ranges, "from" prices, installment copy, shipping thresholds, and per-unit prices instead of guessing. This keeps the review working on stores that return 403 to server-side requests. If the page exposes no metadata or visible price, the server-side reader remains the fallback. The dialog also provides copyable bookmarklet code and a mobile fallback note. The capture URL is consumed once so refreshes do not repeat the review.
    - **Monthly Fun-Money Ledger with editable caps:** Every Bought action writes one auditable ledger entry. The month's spend, remaining budget, and over-budget state are derived from that ledger, so the month resets automatically on the 1st. The cap and optional per-category caps are editable from the ledger, which also shows a category breakdown and month-by-month history.
-   - **Discounter & Chemical/Spec Dupe Finder:** Cross-links retail product saves against your own bookmarked discounters (`Olfactory Factory LLC`, `FragranceNet`, `Quince`, `Thursday Factory Seconds`).
-   - **14-Day Cooling-Off State Machine (`lib/gate.js`):** New saves get `added_at`, `unlock_at`, and a real lifecycle (`cooling → ready → bought/skipped/snoozed`). Every countdown is derived from timestamps, not seed text. **Snooze** pushes the decision out 7/14/30 days, **Skip** archives without spending, and **Buy** is rejected until the gate clears. An archived wish can be **reopened**, and a mistaken ledger entry can be **voided** while staying in the data file for audit. **Remove** deletes a wish that was saved by mistake and unlinks it from every routine; it is refused once the wish has any purchase record, so the ledger stays auditable.
+   - **Discounter & Chemical/Spec Dupe Finder:** Cross-links retail product saves against your own bookmarked discounters (`Olfactory Factory LLC`, `FragranceNet`, `Quince`, `Thursday Boot Company`).
+   - **14-Day Cooling-Off State Machine (`lib/gate.js`):** New saves get `added_at`, `unlock_at`, and a real lifecycle (`cooling → ready → bought/skipped/snoozed`). Every countdown is derived from timestamps, not seed text. **Snooze** pushes the decision out 1–90 days (default 7), **Skip** archives without spending, and **Buy** is rejected until the gate clears. An archived wish can be **reopened**, and a mistaken ledger entry can be **voided** while staying in the data file for audit. **Remove** deletes a wish that was saved by mistake and unlinks it from every routine; it is refused once the wish has any purchase record, so the ledger stays auditable.
    - **Price history, targets and re-checks:** every capture, manual edit, and **Check price** action appends a timestamped observation to the wish. Gate cards show a sparkline, lowest-seen price, observation count, and last-checked time. Set an optional target price in Details; the Gate flags the wish when the observed price meets it. Re-checking is rate limited and uses the same SSRF-safe reader as promotion.
    - **Duplicate warning before the clock starts:** the review dialog compares the incoming title against active wishes and surfaces likely duplicates (with the matching price and same-store hint) before you start a new 14-day gate.
    - **Editable You profile (`lib/profile.js`):** **You → Edit profile** changes your name, location, sizing, hard constraints, owned inventory and scent notes without touching JSON. The server validates every field, protects budget/cooling fields, preserves inventory IDs, and writes the vault atomically. The Gate and oracle read the updated context immediately.
@@ -66,6 +66,9 @@ Every task in Stashov is routed to the optimal Muse model on the **Meta Model AP
    - The app also persists the active tab, Gate lane, Library section/status/search, and Vault cluster in the URL hash, so refresh and Back preserve the view.
 5. **2-Second Ingest Studio & Transparent Router Telemetry:**
    - Ingests URLs, pasted screenshot text, or notes with the local classifier, and logs **provider-reported** token counts for the two live model calls (impulse audit, vault audit) in the **Router Telemetry Console**. Local actions record zero tokens; spend is a blended estimate, labelled as such.
+6. **Memory Palace 3D (`public/palace.html` + `public/palace.js`):** an eye-level 3D home for the vault — Atrium, cooling wishes, Shelf of Proof, and Treasury basins — with a **▶ Play demo** camera flight and live narration. Open it at `/palace.html` on the local server.
+7. **Refs board with notes (`lib/notes.js`):** Apple-Notes-style references. Create, edit, and delete notes, categories, and tags, and filter by category. Website and video scans auto-file notes for reference; routines found in a scan land in Rules.
+8. **Bulk import and video capture:** import a TikTok data-download file straight into the vault (`POST /api/import/tiktok`), or capture a video's products into the Gate with verified prices while routine steps go to Rules.
 
 ---
 
@@ -73,7 +76,7 @@ Every task in Stashov is routed to the optimal Muse model on the **Meta Model AP
 
 Every room, status, verdict, price label, shelf, guardrail, and data term is defined in **[docs/GLOSSARY.md](docs/GLOSSARY.md)**. It starts with the pairs that are easiest to confuse: Active vs Cooling, Ready vs "gate cleared", Blocked vs Locked vs Bot-blocked, and verdict vs status.
 
-The same definitions are searchable inside the app from **Help** in the top bar or the **?** shortcut. `public/glossary.json` is generated from the markdown with `npm run build-glossary`, so the written and in-app glossaries stay in sync.
+The same definitions are searchable inside the app from **Help** in the top bar. `public/glossary.json` is generated from the markdown with `npm run build-glossary`, so the written and in-app glossaries stay in sync.
 
 ---
 
@@ -94,29 +97,34 @@ Stashov is a personal vault, so the server is locked down by default:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Arafat87/stashov-personal-ai.git
-cd stashov-personal-ai
+git clone https://github.com/Arafat87/Stashov_2.0.git
+cd Stashov_2.0
 
 # 2. Install dependencies
 npm ci
 
-# 3. (Optional) Configure your Meta Model API key and access settings
+# 3. (Optional) Add your model key for live audits
 cp .env.example .env
-# Edit .env and set MODEL_API_KEY=your_key_here
+# Edit .env and set MODEL_API_KEY=your_key_here — without it the app runs on local traces.
 # Add STASHOV_ACCESS_TOKEN before exposing the app beyond localhost.
 
-# 4. Sync & categorize local browser bookmarks (Chrome / Brave / Edge)
+# 4. Start the server (bundled demo vault: 1,346 bookmarks, 13 wishes, 5 routines)
+npm start
+# Vault:  http://localhost:3847
+# Palace: http://localhost:3847/palace.html
+
+# 5. (Optional) Verify the install — 27 suites, 181 tests
+npm test
+
+# 6. (Optional) Replace the demo vault with your own browser bookmarks
+# WARNING: overwrites data/vault.json bookmarks (the previous file is kept as .bak).
 npm run sync-bookmarks
 
-# 5. Run the digest worker check
-npm run worker
+# 7. (Optional) Seed the Jordan demo persona for Judge Mode
+npm run seed-persona
 
-# 6. (Optional) Audit the reference library, extract descriptions, and remove confirmed-dead links
+# 8. (Optional) Audit the reference library (slow network crawl; removes confirmed-dead links)
 npm run audit-library
-
-# 7. Start the Stashov Web Vault & Agent Server
-npm start
-# Open http://localhost:3847
 ```
 
 ---
@@ -127,7 +135,7 @@ npm start
 
 The canonical deployment is **[https://stashov.com](https://stashov.com)**.
 
-1. Push this repo to GitHub (`https://github.com/Arafat87/stashov-personal-ai`)
+1. Push this repo to GitHub (`https://github.com/Arafat87/Stashov_2.0`)
 2. Go to [vercel.com](https://vercel.com) → **Add New Project** → Import your GitHub repo
 3. Vercel auto-detects `vercel.json` and deploys the Node.js server
 4. Open **Storage → Create Database → Blob**, connect it to this project, and redeploy. Vercel injects `BLOB_STORE_ID`; without a Blob store the vault falls back to `/tmp` and edits disappear between requests. For a self-hosted Vercel-compatible setup, set `BLOB_READ_WRITE_TOKEN` instead.
@@ -146,11 +154,10 @@ The canonical deployment is **[https://stashov.com](https://stashov.com)**.
 4. In **Environment**, add `MODEL_API_KEY` and `STASHOV_ACCESS_TOKEN` as secrets. `render.yaml` already sets `HOST=0.0.0.0`; the server refuses to start on a public interface without a token.
 5. Deploy → open the demo URL and unlock it with the token. Health checks use the public `/api/health` route.
 
-### Option C: Cron-backed digest worker (Vercel/CI)
+### Option C: Scheduled worker (Modal clock + digest job)
 
-1. Schedule `node jobs/digest-worker.js` from Vercel Cron or any CI host against this repo
-2. Configure the same environment variables
-3. The worker writes `data/digest-worker.json` and runs on local data only — no model calls
+1. `modal/price_loop.py` wakes the deployed server every 6 hours (one-time setup in `modal/README.md` needs your Modal token + the deployment URL). The server re-polls cooling wishes against price floors, clears finished timers, refreshes the digest, and logs the run to telemetry
+2. `node jobs/digest-worker.js` runs the same maintenance on demand or from any CI cron. It writes the digest + telemetry into the vault store and makes no model calls
 
 ---
 
@@ -161,7 +168,7 @@ The canonical deployment is **[https://stashov.com](https://stashov.com)**.
 - [x] **Project description** — what/why/how documented in this README
 - [x] **Working demo URL** — [stashov.com](https://stashov.com) is live on Vercel from `master` (`/api/health` 200, `/api/vault` 401 signed out). Unlock it with the `STASHOV_ACCESS_TOKEN` set in Vercel, so share that token with the submission.
 - [ ] **≤3-minute public YouTube demo video** — walk through the Gate review, a routine, and the Library cleanup
-- [x] **Public code repo** — [Arafat87/stashov-personal-ai](https://github.com/Arafat87/stashov-personal-ai) is public and `master` is pushed
+- [x] **Public code repo** — [Arafat87/Stashov_2.0](https://github.com/Arafat87/Stashov_2.0) is public and `master` is pushed
 - [x] **Muse model usage highlighted** — model routing table above + telemetry console
 - [ ] **Feedback on Meta tooling** — add to submission form
 - [x] **Category = Personal AI**
@@ -171,53 +178,112 @@ The canonical deployment is **[https://stashov.com](https://stashov.com)**.
 ## Project Structure
 
 ```
-stashov-personal-ai/
+Stashov_2.0/
 ├── server.js                    # Main HTTP server + REST API
-├── vercel.json                  # Vercel deployment config
-├── render.yaml                  # Render deployment config
-├── package.json                 # npm scripts: start, sync-bookmarks, worker, test
-├── .env.example                 # Environment template
+├── vercel.json                  # Vercel deployment config (all routes → server.js)
+├── render.yaml                  # Render deployment config (HOST=0.0.0.0, health check /api/health)
+├── package.json                 # npm scripts: start, sync-bookmarks, seed-persona, audit-library, generate-cluster-cards, build-glossary, worker, archil-check, test
+├── package-lock.json            # Pinned dependency tree
+├── .env.example                 # Environment template with all provider and access keys
 ├── LICENSE                      # Apache 2.0
 ├── README.md                    # This file
+├── DEMO-SCRIPT.md               # 3-minute narrated demo script (record the deployed app)
+├── modal/                       # Scheduled price loop: wakes the server every 6h (see modal/README.md)
+├── visual-plan/                 # Palace PRD plus reference renders (refs/, best/)
 ├── docs/
-│   └── GLOSSARY.md              # Plain-language definitions for every Stashov term
+│   ├── GLOSSARY.md              # Plain-language definitions for every Stashov term
+│   ├── SUBMISSION.md             # Judge runbook: demo script, Judge Mode, try-it steps
+│   └── hackathon-chat-log.*     # Full build trace (json + md)
 ├── scripts/
 │   ├── sync-bookmarks.js        # Chrome/Brave/Edge bookmark importer + 14-category classifier
+│   ├── seed-persona.js          # Seed the Jordan Judge Mode demo persona (npm run seed-persona)
 │   ├── audit-library.js         # Reference-link checker + description extractor
-│   └── generate-cluster-cards.js # 800x600 SVG reference card per cluster
+│   ├── generate-cluster-cards.js # 800x600 SVG reference card per cluster
+│   ├── build-glossary.js        # GLOSSARY.md → public/glossary.json for in-app Help
+│   ├── archil-persist-check.js  # Archil durable-disk check (npm run archil-check)
+│   └── enrich-images.js         # Backfill product photos for wishlist items into the vault
 ├── lib/
 │   ├── gate.js                  # 14-day gate state machine, buy/skip/snooze/reopen, ledger, budget caps
+│   ├── treasury.js              # Yearly income allocation buckets synced to the fun cap
+│   ├── journal.js               # Decision journal: past choices quoted back in audits
+│   ├── provider.js              # Chat provider cascade with rescue → offline fallback
+│   ├── meta.js                  # Meta Model API client (chat + image)
+│   ├── baseten.js               # Baseten rescue client (fires only when the primary call fails)
+│   ├── vault-audit.js           # Full-digest audit prompt, report extractor, telemetry math
 │   ├── product-info.js          # JSON-LD/OpenGraph product capture for promoted bookmarks
+│   ├── product-lookup.js        # Routine lines → product queries for Gate matching
 │   ├── promotion.js             # Pre-gate preview + reviewed wish construction
 │   ├── safe-fetch.js            # SSRF-safe page and image fetching
 │   ├── image-cache.js           # Raster-only product image cache
+│   ├── shelf.js                 # Closet/shelf photo scan into owned inventory
+│   ├── video.js                 # Video/URL parsing, product spotting, routine extraction
+│   ├── tiktok.js                # TikTok data-download parser for bulk import
+│   ├── notes.js                 # Refs board notes, categories, and tag surgery
+│   ├── tags.js                  # Tag sanitizer (trim, dedupe, caps)
 │   ├── library.js               # Reference section taxonomy and classifier
-│   ├── sections.js              # Library shelf grouping and counts
+│   ├── sections.js              # Sidebar shelf collections (CRUD + reorder)
 │   ├── clusters.js              # Vault cluster definitions and covers
 │   ├── routine.js               # Pasted-routine parser and conflict guardrails
 │   ├── protocols.js             # Protocol CRUD and daily check-off log
+│   ├── profile.js               # You-profile validation and updates
+│   ├── persona.js               # Judge Mode demo vault swap/restore
+│   ├── data-paths.js            # Local data/ vs /tmp paths on Vercel
+│   ├── archil-disk.js           # Archil durable-disk client
 │   └── state.js                 # Atomic vault writes, backups, and hosted storage
 ├── jobs/
 │   └── digest-worker.js         # Digest maintenance job: deal poller, link-rot verifier, digest generator
 ├── public/
-│   ├── index.html               # 8-tab Web Vault (Deck, Vault, Library, Gate, Rules, You, Capture, Router)
+│   ├── index.html               # 9-tab Web Vault (Deck, Vault, Library, Gate, Rules, You, Capture, Router, Refs)
 │   ├── app.js                   # All client views, dialogs, and capture flow
+│   ├── boot.js                  # Progressive-enhancement boot flag
+│   ├── palace.html              # Memory Palace 3D entry point
+│   ├── palace.js                # Palace scene, flights, and labels (three.js)
 │   ├── styles.css               # Design system and responsive layout
 │   ├── views.css                # Per-view styling
+│   ├── overlays.css             # Dialog and overlay styling
+│   ├── manifest.webmanifest     # PWA manifest + Web Share Target
+│   ├── sw.js                    # Service worker (share-target POST only)
+│   ├── unlock.html / unlock.js  # Token gate page + client
+│   ├── glossary.json            # Generated in-app glossary (npm run build-glossary)
+│   ├── icon.svg                 # App icon
+│   ├── fonts/                   # Bundled display fonts
+│   ├── vendor/                  # three.module.js for the Palace
 │   └── cluster-cards/           # 14 generated 800x600 cluster reference cards
 ├── data/
 │   ├── vault.json               # SQLite-free JSON vault: 1,346 bookmarks, 13 wishlist items, 5 protocols, personal context, telemetry
 │   ├── sections.json            # Reference shelf definitions
 │   ├── clusters.json            # Cluster definitions and covers
+│   ├── library-audit.json       # Latest reference-link health audit
+│   ├── library-removal-review.json # Removal review log (9 false positives restored)
+│   ├── persona-vault.json       # Jordan Judge Mode demo vault seed
 │   └── images/                  # Cached product photos
-└── tests/
+└── tests/                       # 27 node:test suites, 181 tests (npm test)
     ├── gate.test.js             # Gate lifecycle, ledger rollover, budget caps, details, reopen/void
+    ├── treasury.test.js         # Treasury defaults and allocation math
+    ├── journal.test.js          # Decision journal entries
+    ├── provider.test.js         # Provider cascade, model translation, offline shapes
+    ├── meta.test.js             # Meta client: models, overrides, offline shape, request format
+    ├── baseten.test.js          # Baseten rescue defaults and trigger order
+    ├── vault-audit.test.js      # Digest coverage, report extractor, telemetry math
     ├── product-info.test.js     # JSON-LD/OpenGraph price and brand extraction
+    ├── product-lookup.test.js   # Routine lines → product queries
     ├── promotion.test.js        # Pre-gate preview and reviewed-price provenance
     ├── capture-dom.test.js      # Bookmarklet DOM price fallback
+    ├── shelf.test.js            # Closet scan parsing
+    ├── video.test.js            # Video URL parsing and routine extraction
+    ├── tiktok.test.js           # TikTok download parser + bulk import
+    ├── notes.test.js            # Notes/categories/tags CRUD + routine extraction
+    ├── tags.test.js             # Tag sanitizer
+    ├── library-duplicates.test.js # Canonical-URL duplicate review
     ├── search-relevance.test.js # Lexical search ranking
     ├── server-security.test.js  # Auth, origin, SSRF, and media guards
+    ├── unlock.test.js           # Token gate + guess throttling
+    ├── state-durability.test.js # Atomic writes, .bak, snapshot rotation
+    ├── profile.test.js          # Profile validation + budget/cooling protection
     ├── routine-today.test.js    # Daily routine check-off log
+    ├── persona.test.js          # Judge Mode vault swap/restore
+    ├── price-history.test.js    # Price observations, targets, re-checks
+    ├── safe-fetch.test.js       # SSRF guards (private ranges, metadata, DNS)
     └── stashov.test.js          # Vault, classifier, embeddings, job, library, routine, protocol CRUD
 ```
 
@@ -231,34 +297,58 @@ stashov-personal-ai/
 | GET | `/api/export` | Download a complete vault + sections + cluster-cover backup |
 | POST | `/api/import` | Validate and restore a backup after writing a pre-import snapshot |
 | GET | `/api/vault` | Full vault summary + personal context + wishlist + gate/ledger state + protocols + routine log + telemetry |
+| PATCH | `/api/context` | Update the You profile (budget and cooling fields are protected) |
 | GET | `/api/bookmarks` | Paginated, filtered lexical search across 1,346 bookmarks, with a local vector tie-breaker and cached page photos merged into each item |
+| PUT | `/api/bookmarks/:id/tags` | Replace a bookmark's tags (Refs board editor) |
 | POST | `/api/bookmarks/:id/image` | Read and cache a saved link's page photo for its cluster card; the photo map is stored separately from the vault |
+| POST | `/api/images/resolve` | Resolve a page URL to its product image (30/min) |
+| POST | `/api/bookmarks/sync` | Re-sync local browser bookmarks (Chrome, Brave, Edge) |
 | GET | `/api/library` | Paginated reference library with sections, search, health status, descriptions; `status=archived` lists archived links |
 | GET | `/api/library/duplicates` | Groups library links that resolve to the same canonical URL |
 | POST | `/api/library/bulk` | Archive, restore, or refile up to 250 library links at once |
 | PUT | `/api/library/:id` | Edit a reference description, use-for note, or section |
-| POST | `/api/bookmark-preview` | Read a bookmark or pasted product URL and return a review payload without gating it |
-| POST | `/api/promote-bookmark` | Start the 14-day gate from reviewed product details |
+| GET | `/api/sections` | List sidebar shelf collections |
+| POST | `/api/sections` | Create a sidebar collection |
+| PUT | `/api/sections/:id` | Edit a sidebar collection |
+| DELETE | `/api/sections/:id` | Delete a sidebar collection |
+| POST | `/api/sections/reorder` | Reorder sidebar collections |
+| PUT | `/api/clusters/:id` | Set a cluster's display mode, hero item, or cover |
+| GET | `/api/notes` | List Refs notes (filter by category) |
+| POST | `/api/notes` | Create a Refs note |
+| PUT | `/api/notes/:id` | Edit a note |
+| DELETE | `/api/notes/:id` | Delete a note |
+| POST | `/api/note-categories` | Create a note category |
+| PUT | `/api/note-categories/:id` | Edit a note category |
+| DELETE | `/api/note-categories/:id` | Delete a note category |
+| POST | `/api/notes/tags/remove` | Bulk-remove a tag from notes |
 | POST | `/api/routines/parse` | Structure a pasted routine into AM/PM steps and conflict guardrails |
+| POST | `/api/routines/lookup-product` | Look up a pasted-but-unsaved product for a routine |
 | POST | `/api/protocols` | Create a routine/protocol |
 | PUT | `/api/protocols/:id` | Edit a routine/protocol |
 | DELETE | `/api/protocols/:id` | Delete a routine/protocol |
 | POST | `/api/protocols/:id/today` | Check a routine on/off for one local calendar day |
-| POST | `/api/bookmarks/sync` | Re-sync local browser bookmarks (Chrome, Brave, Edge) |
-| POST | `/api/ingest` | Ingest URL, screenshot OCR, or life-hack note → auto-categorize + impulse-gate |
+| POST | `/api/bookmark-preview` | Read a bookmark or pasted product URL and return a review payload without gating it |
+| POST | `/api/promote-bookmark` | Start the 14-day gate from reviewed product details |
+| POST | `/api/ingest` | Ingest URL, life-hack note, YouTube transcript, or screenshot OCR → auto-categorize + impulse-gate |
+| POST | `/api/import/tiktok` | Bulk-import a TikTok data-download file |
+| POST | `/api/shelf/scan` | Scan a closet photo into owned inventory (Meta vision) |
 | POST | `/api/impulse-gate` | Run Muse Wonder "Talk Me Out of Buying This" deep audit on any item |
-| POST | `/api/bookmark-preview` | Read a bookmark's product page and return a review card without gating it |
-| POST | `/api/promote-bookmark` | Promote a reviewed bookmark into the impulse-gated wishlist |
+| POST | `/api/vault-audit` | Muse Wonder synthesis across the full bookmark digest; telemetry records provider token usage |
 | DELETE | `/api/wishlist/:id` | Remove a wish that has no purchase history (Gate card Remove and the routine bulk-send undo; 409 once purchased) |
 | PATCH | `/api/wishlist/:id/details` | Correct a wish's title, brand, prices, target, or source; only changed prices are marked manual |
 | POST | `/api/wishlist/:id/refresh-price` | Re-read the saved product page, append a price-history point, and report the change |
+| POST | `/api/wishlist/:id/photo` | Attach a saved photo to a wishlist item |
 | POST | `/api/wishlist/:id/buy` | Record a cleared purchase in the spend ledger (409 while locked or already bought) |
 | POST | `/api/wishlist/:id/skip` | Archive a wish as skipped without spending |
 | POST | `/api/wishlist/:id/snooze` | Push the decision date out by 1–90 days |
 | POST | `/api/wishlist/:id/reopen` | Return a bought/skipped wish to the gate; a bought wish's ledger entry is voided |
 | PUT | `/api/budget` | Update the monthly cap and optional per-category caps |
+| GET | `/api/treasury` | Yearly income allocation summary |
+| PUT | `/api/treasury` | Set income, edit buckets, sync the fun cap |
 | POST | `/api/ledger/:id/void` | Void a mistaken ledger entry and reopen its wish when linked |
-| POST | `/api/vault-audit` | Muse Wonder synthesis across the full bookmark digest; telemetry records provider token usage |
+| POST | `/api/persona/fresh` | Judge Mode: start a blank vault (snapshots the current vault first) |
+| POST | `/api/persona/load` | Judge Mode: swap in the demo persona (snapshots the current vault first) |
+| POST | `/api/persona/restore` | Judge Mode: restore the vault snapshotted before the persona swap |
 | POST | `/api/serverless-job` | Trigger digest maintenance worker on demand |
 
 ---
