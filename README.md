@@ -2,7 +2,7 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)](./LICENSE)
 [![Track: Personal AI](https://img.shields.io/badge/Track-Personal_AI-76b900.svg)](#)
-[![Infra: Meta + Nebius](https://img.shields.io/badge/Infra-Meta_Muse_+_Nebius-8b5cf6.svg)](#)
+[![Infra: Meta Model API](https://img.shields.io/badge/Infra-Meta_Model_API-0668e1.svg)](#)
 
 **Stashov** is an always-on, private **Personal AI** built for the **Meta AI Hackathon (Personal AI Track)**. It ingests your real browser bookmarks (Chrome, Brave, Edge), camera-roll screenshots, and video/social links, organizes them into a semantic memory vault, converts static life hacks into conflict-checked daily protocols, and runs a strict **Impulse-Gate Buyer Engine** against what you already own and your monthly budget.
 
@@ -18,18 +18,18 @@ Stashov unifies your **saved bookmarks**, **wishlist**, **living routines**, and
 
 ---
 
-## Dual-Provider Model Routing (Meta + Nebius)
+## Meta Model API & Muse Model Routing
 
-Every reasoning call cascades **Meta Muse → Nebius Nemotron → Baseten rescue → deterministic offline**. The **Meta Model API** (`https://api.meta.ai/v1`) is primary; **Nebius Token Factory** (`https://api.tokenfactory.nebius.com/v1`) serves automatically when Meta is unconfigured or a Meta call fails (Muse model ids translate to their Nemotron tier twin); Baseten fires only when both fail; with no key the app runs on deterministic local traces. Every response carries `provider` + `via` so telemetry always names the model that actually served.
+Every task in Stashov is routed to the optimal Muse model on the **Meta Model API** (`https://api.meta.ai/v1`). A Baseten rescue fires only when the primary call fails; with no key configured the app runs on deterministic local traces.
 
-| Cognitive Tier | Meta Model API (primary) | Nebius Token Factory (fallback) | Role in Stashov |
-| :--- | :--- | :--- | :--- |
-| **Frontier Reasoning** | `muse-wonder-1.0` | `nvidia/Nemotron-3-Ultra-550b-a55b` | Full-digest vault synthesis (every one of the 1,346 bookmarks is sent, not just counts) and "Talk Me Out of Buying This" impulse audits. |
-| **Mid-Tier Agentic Synthesis** | `muse-spark-1.3` | `nvidia/Nemotron-3-Super-120b-a12b` | Promoting bookmarks into structured wishlist cards, protocol checklist generation, and dupe comparison. |
-| **Fast Structured Extraction** | `muse-spark-1.1` | `nvidia/Nemotron-3-Nano-30B-A3B` | Sub-second URL/transcript classification, auto-tagging across 14 categories, and price schema extraction. |
-| **Vision Ingestion** | `muse-spark-1.3` (multimodal) | `zai-org/GLM-5.3-Flash` | Camera-roll screenshot OCR and video-thumbnail product spotting (product names, prices, brands, routine steps). |
-| **Unified Semantic Memory** | — | `Qwen/Qwen3-Embedding-8B` | Embedding bookmarks, wishlist items, owned inventory, and protocols for semantic search and automatic cross-linking. |
-| **Autonomous Background Worker** | Deterministic digest job (`jobs/digest-worker.js`) — no model calls | — | Scheduled deal/discounter polling, link-rot verification, cooling-off timer unlocks, and digest compilation. |
+| Cognitive Tier | Model on the Meta Model API | Role in Stashov |
+| :--- | :--- | :--- |
+| **Frontier Reasoning** | `muse-wonder-1.0` | Full-digest vault synthesis (every one of the 1,346 bookmarks is sent, not just counts) and "Talk Me Out of Buying This" impulse audits. |
+| **Mid-Tier Agentic Synthesis** | `muse-spark-1.3` | Promoting bookmarks into structured wishlist cards, protocol checklist generation, and dupe comparison. |
+| **Fast Structured Extraction** | `muse-spark-1.1` | Sub-second URL/transcript classification, auto-tagging across 14 categories, and price schema extraction. |
+| **Vision Ingestion** | `muse-spark-1.3` (multimodal) | Camera-roll screenshot OCR and video-thumbnail product spotting (product names, prices, brands, routine steps). |
+| **Unified Semantic Memory** | `Qwen/Qwen3-Embedding-8B` | Embedding bookmarks, wishlist items, owned inventory, and protocols for semantic search and automatic cross-linking. |
+| **Autonomous Background Worker** | Deterministic digest job (`jobs/digest-worker.js`) | Scheduled deal/discounter polling, link-rot verification, cooling-off timer unlocks, and digest compilation. No model calls. |
 
 ---
 
@@ -65,7 +65,7 @@ Every reasoning call cascades **Meta Muse → Nebius Nemotron → Baseten rescue
    - Mobile: install the PWA from a share menu. The web manifest registers a **Web Share Target** at `/share-target`, so sharing a product link from Chrome/Android opens the pre-gate review (`/?capture=…`). HTTPS is required outside localhost.
    - The app also persists the active tab, Gate lane, Library section/status/search, and Vault cluster in the URL hash, so refresh and Back preserve the view.
 5. **2-Second Ingest Studio & Transparent Router Telemetry:**
-   - Ingests URLs, pasted screenshot text, or notes with the local classifier, and logs **provider-reported** token counts for the two live model calls (impulse audit, vault audit) in the **Nebius Token Factory Telemetry Console**. Local actions record zero tokens; spend is a blended estimate, labelled as such.
+   - Ingests URLs, pasted screenshot text, or notes with the local classifier, and logs **provider-reported** token counts for the two live model calls (impulse audit, vault audit) in the **Router Telemetry Console**. Local actions record zero tokens; spend is a blended estimate, labelled as such.
 
 ---
 
@@ -100,9 +100,9 @@ cd stashov-personal-ai
 # 2. Install dependencies
 npm ci
 
-# 3. (Optional) Configure your model keys (Meta primary, Nebius fallback) and access settings
+# 3. (Optional) Configure your Meta Model API key and access settings
 cp .env.example .env
-# Edit .env and set MODEL_API_KEY=... and NEBIUS_API_KEY=... (either key enables live calls)
+# Edit .env and set MODEL_API_KEY=your_key_here
 # Add STASHOV_ACCESS_TOKEN before exposing the app beyond localhost.
 
 # 4. Sync & categorize local browser bookmarks (Chrome / Brave / Edge)
@@ -134,9 +134,8 @@ The canonical deployment is **[https://stashov.com](https://stashov.com)**.
 5. In **Settings → Environment Variables**, add:
    - `STASHOV_ACCESS_TOKEN` = a long random secret (required for a public demo; the server serves `503` or `401` without it)
    - `STASHOV_PUBLIC_ORIGIN` = `https://stashov.com` (also add `https://www.stashov.com` only if you configure the `www` host)
-   - `MODEL_API_KEY` = your Meta Model API key (primary; with no key the app runs on local traces)
-   - `NEBIUS_API_KEY` = your Nebius Token Factory key (automatic fallback when Meta is unset or fails)
-   - (Model IDs fall back to the defaults in `lib/meta.js` + `lib/provider.js`; set `MODEL_*` only to override them)
+   - `MODEL_API_KEY` = your Meta Model API key (with no key the app runs on local traces)
+   - (Model IDs fall back to the defaults in `server.js`; set `MODEL_*` only to override them)
 6. Deploy → open `https://stashov.com`, unlock with the token, and confirm `/api/vault` returns `401` while signed out. Never leave a public deployment without `STASHOV_ACCESS_TOKEN`.
 
 ### Option B: Render (Free Web Service)
@@ -144,7 +143,7 @@ The canonical deployment is **[https://stashov.com](https://stashov.com)**.
 1. Push this repo to GitHub
 2. Go to [render.com](https://render.com) → **New +** → **Web Service** → Connect repo
 3. Render auto-detects `render.yaml` and configures the service
-4. In **Environment**, add `MODEL_API_KEY`, `NEBIUS_API_KEY` (fallback) and `STASHOV_ACCESS_TOKEN` as secrets. `render.yaml` already sets `HOST=0.0.0.0`; the server refuses to start on a public interface without a token.
+4. In **Environment**, add `MODEL_API_KEY` and `STASHOV_ACCESS_TOKEN` as secrets. `render.yaml` already sets `HOST=0.0.0.0`; the server refuses to start on a public interface without a token.
 5. Deploy → open the demo URL and unlock it with the token. Health checks use the public `/api/health` route.
 
 ### Option C: Cron-backed digest worker (Vercel/CI)
@@ -157,14 +156,14 @@ The canonical deployment is **[https://stashov.com](https://stashov.com)**.
 
 ## Hackathon Submission Checklist
 
-- [x] **Working project on Meta Muse + Nebius Nemotron** — dual-provider cascade with offline fallback
+- [x] **Working project on the Meta Model API** using Muse models (Wonder, Spark)
 - [x] **Category: Personal AI** — always-on private assistant with persistent memory, skills, tool access
 - [x] **Project description** — what/why/how documented in this README
 - [x] **Working demo URL** — [stashov.com](https://stashov.com) is live on Vercel from `master` (`/api/health` 200, `/api/vault` 401 signed out). Unlock it with the `STASHOV_ACCESS_TOKEN` set in Vercel, so share that token with the submission.
 - [ ] **≤3-minute public YouTube demo video** — walk through the Gate review, a routine, and the Library cleanup
 - [x] **Public code repo** — [Arafat87/stashov-personal-ai](https://github.com/Arafat87/stashov-personal-ai) is public and `master` is pushed
-- [x] **NVIDIA Nemotron + Token Factory usage highlighted** — model routing table above + telemetry console
-- [ ] **Feedback on Nebius + NVIDIA tools** — add to submission form
+- [x] **Muse model usage highlighted** — model routing table above + telemetry console
+- [ ] **Feedback on Meta tooling** — add to submission form
 - [x] **Category = Personal AI**
 
 ---
@@ -199,7 +198,7 @@ stashov-personal-ai/
 │   ├── protocols.js             # Protocol CRUD and daily check-off log
 │   └── state.js                 # Atomic vault writes, backups, and hosted storage
 ├── jobs/
-│   └── nebius-serverless-worker.js  # Nebius Serverless Job: deal poller, link-rot verifier, digest generator
+│   └── digest-worker.js         # Digest maintenance job: deal poller, link-rot verifier, digest generator
 ├── public/
 │   ├── index.html               # 8-tab Web Vault (Deck, Vault, Library, Gate, Rules, You, Capture, Router)
 │   ├── app.js                   # All client views, dialogs, and capture flow
@@ -247,7 +246,7 @@ stashov-personal-ai/
 | POST | `/api/protocols/:id/today` | Check a routine on/off for one local calendar day |
 | POST | `/api/bookmarks/sync` | Re-sync local browser bookmarks (Chrome, Brave, Edge) |
 | POST | `/api/ingest` | Ingest URL, screenshot OCR, or life-hack note → auto-categorize + impulse-gate |
-| POST | `/api/impulse-gate` | Run Nemotron 3 Ultra "Talk Me Out of Buying This" deep audit on any item |
+| POST | `/api/impulse-gate` | Run Muse Wonder "Talk Me Out of Buying This" deep audit on any item |
 | POST | `/api/bookmark-preview` | Read a bookmark's product page and return a review card without gating it |
 | POST | `/api/promote-bookmark` | Promote a reviewed bookmark into the impulse-gated wishlist |
 | DELETE | `/api/wishlist/:id` | Remove a wish that has no purchase history (Gate card Remove and the routine bulk-send undo; 409 once purchased) |
@@ -259,20 +258,8 @@ stashov-personal-ai/
 | POST | `/api/wishlist/:id/reopen` | Return a bought/skipped wish to the gate; a bought wish's ledger entry is voided |
 | PUT | `/api/budget` | Update the monthly cap and optional per-category caps |
 | POST | `/api/ledger/:id/void` | Void a mistaken ledger entry and reopen its wish when linked |
-| POST | `/api/vault-audit` | 1M-context Nemotron 3 Ultra synthesis across the full bookmark digest; telemetry records provider token usage |
-| POST | `/api/serverless-job` | Trigger Nebius Serverless Job worker on demand |
-
----
-
-## Feedback on Nebius Token Factory & NVIDIA Tools (for Judges)
-
-> **Nebius Token Factory:** The OpenAI-compatible API made integration trivial — drop-in replacement for any OpenAI SDK. The model catalog (`/api/public/models_info`) exposes capabilities (`function_calling`, `context_and_rag`, `responses_api`, `MTP` fast decode) so routing logic is data-driven, not hardcoded. Pricing is transparent (e.g., Qwen3-Embedding-8B at $0.01/M tokens makes semantic memory near-free). Serverless Jobs are a perfect fit for periodic background work without managing infra.
-
-> **NVIDIA Nemotron 3 Ultra (1M context):** The 1M-token window is not a gimmick — the audit sends the digest of all 1,346 bookmarks in one pass, alongside the wishlist, routines, personal inventory and budget, so the model can cite specific saves instead of guessing from counts. This is the "killer feature" that makes a personal AI actually *personal*.
-
-> **Nemotron 3 Nano/Super/Lightning:** The tiered routing (Ultra for deep reasoning, Nano for fast extraction, Lightning for MTP decode) cuts latency and cost by 10x vs. using Ultra for everything. `Nemotron-3.5-Lightning` with MTP is notably fast for structured extraction.
-
-> **Suggested improvements:** Fine-tune support for Nemotron models would let us distill the "Impulse-Gate" prompt into a smaller specialized model. WebSocket/streaming support on Token Factory would improve perceived latency for the 1M-context Ultra calls.
+| POST | `/api/vault-audit` | Muse Wonder synthesis across the full bookmark digest; telemetry records provider token usage |
+| POST | `/api/serverless-job` | Trigger digest maintenance worker on demand |
 
 ---
 
