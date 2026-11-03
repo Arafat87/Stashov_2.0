@@ -51,9 +51,9 @@ past decisions.
 5. Palace → **▶ Play demo**: Atrium → cooling wish → Shelf of Proof →
    Treasury basins, closing on Wonder's live narration.
 
-Narrated 90-second demo (Jordan loaded, paycheck-to-purchase story):
-`video/stashov-jordan-demo-90s.mp4`. Silent palace-only cut:
-`video/palace-tour-jordan.webm`.
+Record the narrated 90-second cut (Jordan loaded, paycheck-to-purchase story)
+and a silent palace-only cut from the live walkthrough above for the
+<=3-minute submission video.
 
 ## Try it
 
