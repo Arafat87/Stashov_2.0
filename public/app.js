@@ -149,6 +149,10 @@ const state = {
 
 async function getJSON(url, options) {
   const res = await fetch(url, options);
+  if (res.status === 401) {
+    window.location.assign('/unlock');
+    throw new Error('Unlock required. Redirecting…');
+  }
   const text = await res.text();
   let data = {};
   try { data = text ? JSON.parse(text) : {}; } catch (_) { data = { error: text.slice(0, 240) }; }

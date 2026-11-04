@@ -113,7 +113,7 @@ npm start
 # Vault:  http://localhost:3847
 # Palace: http://localhost:3847/palace.html
 
-# 5. (Optional) Verify the install — 27 suites, 181 tests
+# 5. (Optional) Verify the install — 28 suites, 184 tests
 npm test
 
 # 6. (Optional) Replace the demo vault with your own browser bookmarks
@@ -257,7 +257,7 @@ Stashov_2.0/
 │   ├── library-removal-review.json # Removal review log (9 false positives restored)
 │   ├── persona-vault.json       # Jordan Judge Mode demo vault seed
 │   └── images/                  # Cached product photos
-└── tests/                       # 27 node:test suites, 181 tests (npm test)
+└── tests/                       # 28 node:test suites, 184 tests (npm test)
     ├── gate.test.js             # Gate lifecycle, ledger rollover, budget caps, details, reopen/void
     ├── treasury.test.js         # Treasury defaults and allocation math
     ├── journal.test.js          # Decision journal entries
@@ -278,6 +278,7 @@ Stashov_2.0/
     ├── search-relevance.test.js # Lexical search ranking
     ├── server-security.test.js  # Auth, origin, SSRF, and media guards
     ├── unlock.test.js           # Token gate + guess throttling
+    ├── auth-redirect.test.js    # Signed-out API calls redirect to /unlock
     ├── state-durability.test.js # Atomic writes, .bak, snapshot rotation
     ├── profile.test.js          # Profile validation + budget/cooling protection
     ├── routine-today.test.js    # Daily routine check-off log
