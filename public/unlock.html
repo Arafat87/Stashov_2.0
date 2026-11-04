@@ -30,7 +30,7 @@
   <section class="unlock-card" aria-labelledby="unlockTitle">
     <p class="eyebrow">PRIVATE LEDGER / ACCESS GATE</p>
     <h1 id="unlockTitle">Unlock Stashov</h1>
-    <p>This vault is protected by an access token. Enter the value of <code>STASHOV_ACCESS_TOKEN</code> to continue. It stays in an HttpOnly session cookie after this step.</p>
+    <p>This is a private demo vault. Enter the demo access token to continue — judges will find it in the submission's project notes, or request it from the project owner. It stays in a secure HttpOnly session cookie after this step.</p>
     <form method="post" action="/unlock">
       <input type="hidden" id="unlockNext" name="next" value="/" />
       <div>
@@ -40,7 +40,7 @@
       <p class="unlock-error" id="unlockError" role="alert" hidden>That token was not accepted. Try again.</p>
       <button class="btn" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg> Unlock vault</button>
     </form>
-    <p class="unlock-foot">Nothing is sent anywhere except this local server. The token is never written to localStorage.</p>
+    <p class="unlock-foot">The token is checked by this server only and is never written to localStorage.</p>
   </section>
 </main>
 <script src="/unlock.js" defer></script>

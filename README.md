@@ -16,6 +16,8 @@ Regular bookmark folders and wishlist apps fail in two ways:
 
 Stashov unifies your **saved bookmarks**, **wishlist**, **living routines**, and **personal constraints** into one connected brain on open infrastructure you control.
 
+> **Live demo access:** the hosted app at [stashov20.vercel.app](https://stashov20.vercel.app) is protected by a demo access token. Enter it on the unlock page — judges can find it in the submission's project notes. The token itself is never committed to this repo.
+
 ---
 
 ## Meta Model API & Muse Model Routing
