@@ -143,7 +143,7 @@ The canonical deployment is **[https://stashov.com](https://stashov.com)**.
    - `STASHOV_ACCESS_TOKEN` = a long random secret (required for a public demo; the server serves `503` or `401` without it)
    - `STASHOV_PUBLIC_ORIGIN` = `https://stashov.com` (also add `https://www.stashov.com` only if you configure the `www` host)
    - `MODEL_API_KEY` = your Meta Model API key (with no key the app runs on local traces)
-   - (Model IDs fall back to the defaults in `server.js`; set `MODEL_*` only to override them)
+   - (Model IDs fall back to the defaults in `api/index.js`; set `MODEL_*` only to override them)
 6. Deploy → open `https://stashov.com`, unlock with the token, and confirm `/api/vault` returns `401` while signed out. Never leave a public deployment without `STASHOV_ACCESS_TOKEN`.
 
 ### Option B: Render (Free Web Service)
@@ -179,8 +179,8 @@ The canonical deployment is **[https://stashov.com](https://stashov.com)**.
 
 ```
 Stashov_2.0/
-├── server.js                    # Main HTTP server + REST API
-├── vercel.json                  # Vercel deployment config (all routes → server.js)
+├── api/index.js                 # Main HTTP server + REST API (Vercel function + npm start)
+├── vercel.json                  # Vercel rewrites (all routes → /api/index; public/ served as-is)
 ├── render.yaml                  # Render deployment config (HOST=0.0.0.0, health check /api/health)
 ├── package.json                 # npm scripts: start, sync-bookmarks, seed-persona, audit-library, generate-cluster-cards, build-glossary, worker, archil-check, test
 ├── package-lock.json            # Pinned dependency tree

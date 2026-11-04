@@ -8,17 +8,17 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { syncBrowserBookmarks, classifyBookmark, deterministicVec } = require('./scripts/sync-bookmarks');
-const { runServerlessJob } = require('./jobs/digest-worker');
-const { resolveImage, isCachedImage, safeRemoteUrl, IMAGE_DIR, BUNDLED_IMAGE_DIR, ensureImageDir } = require('./lib/image-cache');
-const { loadSections, saveSections, createSection, updateSection, deleteSection, reorderSections } = require('./lib/sections');
-const { getClusterMetaMap, replaceStore, updateClusterMeta } = require('./lib/clusters');
-const { SECTIONS: LIBRARY_SECTIONS, librarySectionFor, librarySectionsWithCounts, findLibraryDuplicates, sectionById: librarySectionById } = require('./lib/library');
-const { parseRoutine, matchWishlistIds } = require('./lib/routine');
-const { extractProductQueries, lookupProduct } = require('./lib/product-lookup');
-const { checkRoutine, createProtocol, updateProtocol, deleteProtocol, normaliseProtocol } = require('./lib/protocols');
-const { createNote, deleteCategory, deleteNote, ensureNotesState, listNotes, stripTag, updateNote, upsertCategory } = require('./lib/notes');
-const { ProfileError, updatePersonalContext } = require('./lib/profile');
+const { syncBrowserBookmarks, classifyBookmark, deterministicVec } = require('../scripts/sync-bookmarks');
+const { runServerlessJob } = require('../jobs/digest-worker');
+const { resolveImage, isCachedImage, safeRemoteUrl, IMAGE_DIR, BUNDLED_IMAGE_DIR, ensureImageDir } = require('../lib/image-cache');
+const { loadSections, saveSections, createSection, updateSection, deleteSection, reorderSections } = require('../lib/sections');
+const { getClusterMetaMap, replaceStore, updateClusterMeta } = require('../lib/clusters');
+const { SECTIONS: LIBRARY_SECTIONS, librarySectionFor, librarySectionsWithCounts, findLibraryDuplicates, sectionById: librarySectionById } = require('../lib/library');
+const { parseRoutine, matchWishlistIds } = require('../lib/routine');
+const { extractProductQueries, lookupProduct } = require('../lib/product-lookup');
+const { checkRoutine, createProtocol, updateProtocol, deleteProtocol, normaliseProtocol } = require('../lib/protocols');
+const { createNote, deleteCategory, deleteNote, ensureNotesState, listNotes, stripTag, updateNote, upsertCategory } = require('../lib/notes');
+const { ProfileError, updatePersonalContext } = require('../lib/profile');
 const {
   ensureGateState,
   budgetSummary,
@@ -33,16 +33,16 @@ const {
   removeWish,
   reopenItem,
   voidLedgerEntry,
-} = require('./lib/gate');
-const { allocationSummary, updateTreasury } = require('./lib/treasury');
-const { journalDigest } = require('./lib/journal');
-const { mergeScanIntoInventory, parseImageDataUrl, scanClosetImage } = require('./lib/shelf');
-const { findPrePersonaSnapshot, freshVault, loadPersonaVault, readSnapshotVault } = require('./lib/persona');
-const { sanitizeTags } = require('./lib/tags');
-const { extractTikTokLinks, tikTokVideoId } = require('./lib/tiktok');
-const { buildVideoReference, extractRoutineSteps, fetchPageText } = require('./lib/video');
-const { buildPromotedWish, captureBookmarkProduct, captureFromSnapshot, previewFromCapture } = require('./lib/promotion');
-const { buildFallbackReport, buildVaultAuditMessages, extractReport, usageFromResult } = require('./lib/vault-audit');
+} = require('../lib/gate');
+const { allocationSummary, updateTreasury } = require('../lib/treasury');
+const { journalDigest } = require('../lib/journal');
+const { mergeScanIntoInventory, parseImageDataUrl, scanClosetImage } = require('../lib/shelf');
+const { findPrePersonaSnapshot, freshVault, loadPersonaVault, readSnapshotVault } = require('../lib/persona');
+const { sanitizeTags } = require('../lib/tags');
+const { extractTikTokLinks, tikTokVideoId } = require('../lib/tiktok');
+const { buildVideoReference, extractRoutineSteps, fetchPageText } = require('../lib/video');
+const { buildPromotedWish, captureBookmarkProduct, captureFromSnapshot, previewFromCapture } = require('../lib/promotion');
+const { buildFallbackReport, buildVaultAuditMessages, extractReport, usageFromResult } = require('../lib/vault-audit');
 const {
   appendTelemetry,
   readTelemetry,
@@ -59,14 +59,14 @@ const {
   snapshotVault,
   readyBookmarkPhotos,
   saveBookmarkPhoto,
-} = require('./lib/state');
+} = require('../lib/state');
 
 const PORT = (() => {
   const value = Number(process.env.PORT);
   return Number.isInteger(value) && value > 0 && value < 65536 ? value : 3847;
 })();
 const HOST = String(process.env.HOST || '127.0.0.1').trim() || '127.0.0.1';
-const PUBLIC_DIR = path.join(__dirname, 'public');
+const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const ACCESS_TOKEN = String(process.env.STASHOV_ACCESS_TOKEN || '').trim();
 const PUBLIC_ORIGIN = String(process.env.STASHOV_PUBLIC_ORIGIN || '').trim().replace(/\/+$/, '');
 const SESSION_COOKIE = 'stashov_session';
@@ -94,9 +94,9 @@ const RATE_BUCKETS = new Map();
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 ensureImageDir();
 
-const meta = require('./lib/meta');
-const baseten = require('./lib/baseten');
-const provider = require('./lib/provider');
+const meta = require('../lib/meta');
+const baseten = require('../lib/baseten');
+const provider = require('../lib/provider');
 
 // Dual providers: Meta Muse is primary, Nebius Token Factory is the
 // automatic fallback (per request when a Meta call fails, primary when no

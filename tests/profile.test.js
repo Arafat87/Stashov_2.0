@@ -94,7 +94,7 @@ process.env.STASHOV_DATA_DIR = tempDir;
 for (const name of ['vault.json', 'sections.json', 'clusters.json']) {
   fs.copyFileSync(path.join(__dirname, '..', 'data', name), path.join(tempDir, name));
 }
-const server = require('../server');
+const server = require('../api/index');
 
 function request(port, pathname, options = {}) {
   return new Promise((resolve, reject) => {
